@@ -97,20 +97,61 @@ export default function AuthPage() {
         </div>
 
         <div className="space-y-4 mb-8">
-          <Button variant="outline" className="w-full h-12 gap-3" onClick={handleGoogleAuth} disabled={loading}>
-            <Chrome className="w-5 h-5 text-stone-600" />
+          <button 
+            type="button"
+            onClick={handleGoogleAuth} 
+            disabled={loading}
+            className="w-full h-12 flex items-center justify-center gap-3 px-4 bg-white border border-stone-200 rounded-2xl text-stone-700 font-bold text-sm shadow-sm hover:shadow-md hover:border-stone-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
+          >
+            <div className="flex items-center justify-center w-5 h-5 relative">
+              <div className="absolute inset-0 flex flex-wrap">
+                <div className="w-1/2 h-1/2 bg-[#EA4335] rounded-tl-sm" />
+                <div className="w-1/2 h-1/2 bg-[#4285F4] rounded-tr-sm" />
+                <div className="w-1/2 h-1/2 bg-[#FBBC05] rounded-bl-sm" />
+                <div className="w-1/2 h-1/2 bg-[#34A853] rounded-br-sm" />
+              </div>
+              <Chrome className="w-3.5 h-3.5 text-white z-10" />
+            </div>
             Continuer avec Google
-          </Button>
+          </button>
         </div>
 
         <div className="relative mb-8">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-stone-200"></div>
+            <div className="w-full border-t border-stone-100"></div>
           </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-white px-3 text-stone-400">Ou par email</span>
+          <div className="relative flex justify-center text-[10px] font-black uppercase tracking-widest">
+            <span className="bg-white px-4 text-stone-400">Ou par email</span>
           </div>
         </div>
+
+        <AnimatePresence mode="wait">
+          {!isLogin && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="mb-8 overflow-hidden"
+            >
+              <div className="p-4 bg-love-red/5 rounded-3xl border border-love-red/10 space-y-3">
+                <h3 className="text-[10px] font-black uppercase tracking-widest text-love-red">Pourquoi s'inscrire ?</h3>
+                <ul className="space-y-2">
+                  {[
+                    "Rencontrez des profils vérifiés au Gabon",
+                    "Messagerie instantanée en temps réel",
+                    "Découvrez qui a visité votre profil",
+                    "Recevez des mots doux de vos admirateurs"
+                  ].map((text, i) => (
+                    <li key={i} className="flex items-center gap-2 text-xs text-stone-600 font-medium">
+                      <div className="w-1 h-1 rounded-full bg-love-red" />
+                      {text}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <form onSubmit={handleEmailAuth} className="space-y-4">
           <div className="space-y-1">
