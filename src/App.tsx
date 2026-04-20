@@ -38,7 +38,9 @@ export default function App() {
     
     // Visibility change listener for more accurate presence
     const handleVisibilityChange = () => {
-      updatePresence(document.visibilityState === 'visible');
+      if (document.visibilityState === 'visible') {
+        updatePresence(true);
+      }
     };
     document.addEventListener("visibilitychange", handleVisibilityChange);
 

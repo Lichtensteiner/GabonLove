@@ -87,6 +87,19 @@
         "timestamp": { "type": "string", "format": "date-time" }
       },
       "required": ["viewerId", "profileId", "timestamp"]
+    },
+    "Review": {
+      "title": "Review",
+      "description": "User reviews or messages of encouragement/feedback.",
+      "type": "object",
+      "properties": {
+        "authorId": { "type": "string" },
+        "targetId": { "type": "string" },
+        "content": { "type": "string" },
+        "isPublic": { "type": "boolean" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["authorId", "targetId", "content", "timestamp"]
     }
   },
   "firestore": {

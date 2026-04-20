@@ -87,5 +87,12 @@ service cloud.firestore {
       allow read: if isSignedIn() && resource.data.profileId == request.auth.uid;
       allow create: if isSignedIn() && incoming().viewerId == request.auth.uid;
     }
+
+    // 8. Reviews / Encouragements
+    match /reviews/{reviewId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && incoming().authorId == request.auth.uid;
+      allow delete: if isSignedIn() && resource.data.authorId == request.auth.uid;
+    }
   }
 }

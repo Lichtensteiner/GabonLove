@@ -45,7 +45,29 @@ export default function AuthPage() {
       }
       navigate("/home");
     } catch (err: any) {
-      setError(err.message);
+      console.error("Auth error code:", err.code);
+      switch (err.code) {
+        case "auth/email-already-in-use":
+          setError("Cet e-mail est déjà utilisé. Essayez de vous connecter à la place.");
+          break;
+        case "auth/invalid-email":
+          setError("L'adresse e-mail n'est pas valide.");
+          break;
+        case "auth/weak-password":
+          setError("Le mot de passe est trop court (minimum 6 caractères).");
+          break;
+        case "auth/wrong-password":
+          setError("Mot de passe incorrect.");
+          break;
+        case "auth/user-not-found":
+          setError("Aucun compte trouvé avec cet e-mail.");
+          break;
+        case "auth/invalid-credential":
+          setError("Identifiants incorrects ou compte inexistant.");
+          break;
+        default:
+          setError("Une erreur est survenue lors de l'authentification.");
+      }
     } finally {
       setLoading(false);
     }

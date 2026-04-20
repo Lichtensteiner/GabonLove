@@ -2,9 +2,10 @@ import { useState, useEffect } from "react";
 import { db, auth } from "../lib/firebase";
 import { collection, query, where, getDocs, limit, addDoc, serverTimestamp, getDoc, doc, onSnapshot, updateDoc } from "firebase/firestore";
 import { motion, AnimatePresence } from "motion/react";
-import { MapPin, Heart, X, MessageCircle, SlidersHorizontal, Loader2 } from "lucide-react";
+import { MapPin, Heart, X, MessageCircle, SlidersHorizontal, Loader2, Star } from "lucide-react";
 import NavBar from "../components/layout/NavBar";
 import Button from "../components/ui/Button";
+import TestimonyModal from "../components/TestimonyModal";
 
 interface Profile {
   userId: string;
@@ -25,6 +26,7 @@ export default function Dashboard() {
 
   // Track the user's own profile for notifications
   const [myProfile, setMyProfile] = useState<any>(null);
+  const [isTestimonyOpen, setIsTestimonyOpen] = useState(false);
 
   useEffect(() => {
     async function fetchMyProfile() {
@@ -173,38 +175,54 @@ export default function Dashboard() {
                     </span>
                   </div>
 
-                  <div className="pt-2 flex items-center justify-center gap-6">
-                    <button 
-                      onClick={nextProfile}
-                      className="w-14 h-14 rounded-full border-2 border-stone-100 text-stone-400 hover:text-stone-600 hover:border-stone-300 transition-all flex items-center justify-center bg-white shadow-sm active:scale-95"
-                    >
-                      <X className="w-6 h-6" />
-                    </button>
-                    <button 
-                      onClick={handleLike}
-                      className="w-16 h-16 rounded-full bg-love-red text-white flex items-center justify-center shadow-xl shadow-rose-200 hover:bg-rose-600 transition-all active:scale-95 group"
-                    >
-                      <Heart className="w-8 h-8 fill-current group-hover:scale-110 transition-transform" />
-                    </button>
-                    <button className="w-14 h-14 rounded-full border-2 border-stone-100 text-stone-400 hover:text-stone-600 transition-all flex items-center justify-center bg-white shadow-sm active:scale-95">
-                      <MessageCircle className="w-6 h-6" />
-                    </button>
+                    <div className="pt-2 flex items-center justify-center gap-4">
+                      <button 
+                        onClick={nextProfile}
+                        className="w-12 h-12 rounded-full border-2 border-stone-100 text-stone-400 hover:text-stone-600 hover:border-stone-300 transition-all flex items-center justify-center bg-white shadow-sm active:scale-95"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                      <button 
+                        onClick={() => setIsTestimonyOpen(true)}
+                        className="w-12 h-12 rounded-full border-2 border-amber-100 text-amber-500 hover:bg-amber-50 transition-all flex items-center justify-center bg-white shadow-sm active:scale-95 group"
+                        title="Laisser un témoignage"
+                      >
+                        <Star className="w-5 h-5 group-hover:fill-current" />
+                      </button>
+                      <button 
+                        onClick={handleLike}
+                        className="w-16 h-16 rounded-full bg-love-red text-white flex items-center justify-center shadow-xl shadow-rose-200 hover:bg-rose-600 transition-all active:scale-95 group"
+                      >
+                        <Heart className="w-8 h-8 fill-current group-hover:scale-110 transition-transform" />
+                      </button>
+                      <button className="w-12 h-12 rounded-full border-2 border-stone-100 text-stone-400 hover:text-stone-600 transition-all flex items-center justify-center bg-white shadow-sm active:scale-95">
+                        <MessageCircle className="w-5 h-5" />
+                      </button>
+                    </div>
                   </div>
-                </div>
-              </motion.div>
-            </AnimatePresence>
-          ) : (
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-8 bg-stone-100 rounded-[2.5rem] border-2 border-dashed border-stone-300">
-              <Users className="w-12 h-12 text-stone-300 mb-4" />
-              <p className="text-stone-500 font-serif italic text-lg">Plus de profils à afficher pour le moment.</p>
-              <Button variant="outline" className="mt-4" onClick={() => window.location.reload()}>Actualiser</Button>
-            </div>
-          )}
-        </div>
-      </main>
-    </div>
-  );
-}
+                </motion.div>
+              </AnimatePresence>
+            ) : (
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-8 bg-stone-100 rounded-[2.5rem] border-2 border-dashed border-stone-300">
+                <Users className="w-12 h-12 text-stone-300 mb-4" />
+                <p className="text-stone-500 font-serif italic text-lg">Plus de profils à afficher pour le moment.</p>
+                <Button variant="outline" className="mt-4" onClick={() => window.location.reload()}>Actualiser</Button>
+              </div>
+            )}
+          </div>
+        </main>
+        
+        {currentProfile && (
+          <TestimonyModal 
+            isOpen={isTestimonyOpen}
+            onClose={() => setIsTestimonyOpen(false)}
+            targetId={currentProfile.userId}
+            targetName={currentProfile.displayName}
+          />
+        )}
+      </div>
+    );
+  }
 
 function calculateAge(birthDate: string) {
   const birth = new Date(birthDate);
