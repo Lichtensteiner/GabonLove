@@ -1,0 +1,9 @@
+{
+  "name": "GabonLove",
+  "description": "Plateforme de rencontres sécurisée et conviviale pour les Gabonais et la diaspora.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ],
+  "majorCapabilities": []
+}

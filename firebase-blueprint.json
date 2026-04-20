@@ -1,0 +1,122 @@
+{
+  "entities": {
+    "Profile": {
+      "title": "User Profile",
+      "description": "Public user profile information accessible to other users.",
+      "type": "object",
+      "properties": {
+        "displayName": { "type": "string", "description": "Display name or pseudo" },
+        "gender": { "type": "string", "enum": ["male", "female", "other"] },
+        "birthDate": { "type": "string", "format": "date-time" },
+        "city": { "type": "string" },
+        "bio": { "type": "string", "description": "Self-description" },
+        "lookingFor": { "type": "string", "enum": ["serious", "friendship", "casual"] },
+        "interests": { "type": "array", "items": { "type": "string" } },
+        "photos": { "type": "array", "items": { "type": "string" }, "description": "URLs of profile photos" },
+        "mainPhoto": { "type": "string", "description": "Primary profile photo URL" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "isOnline": { "type": "boolean" }
+      },
+      "required": ["displayName", "gender", "birthDate", "city"]
+    },
+    "PrivateInfo": {
+      "title": "Private User Info",
+      "description": "Sensitive user data accessible only to the owner.",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string", "format": "email" },
+        "phoneNumber": { "type": "string" },
+        "onboardingComplete": { "type": "boolean" },
+        "lastLogin": { "type": "string", "format": "date-time" }
+      }
+    },
+    "Message": {
+      "title": "Chat Message",
+      "description": "Private message between two users.",
+      "type": "object",
+      "properties": {
+        "senderId": { "type": "string" },
+        "receiverId": { "type": "string" },
+        "content": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "read": { "type": "boolean" }
+      },
+      "required": ["senderId", "receiverId", "content", "timestamp"]
+    },
+    "Like": {
+      "title": "Interest",
+      "description": "A 'like' from one user to another.",
+      "type": "object",
+      "properties": {
+        "fromId": { "type": "string" },
+        "toId": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      }
+    },
+    "Match": {
+      "title": "Match",
+      "description": "Mutual interest between two users.",
+      "type": "object",
+      "properties": {
+        "users": { "type": "array", "items": { "type": "string" }, "description": "IDs of the two users" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      }
+    },
+    "Notification": {
+      "title": "Notification",
+      "description": "User notification for events like likes, matches, or messages.",
+      "type": "object",
+      "properties": {
+        "recipientId": { "type": "string" },
+        "type": { "type": "string", "enum": ["like", "match", "message"] },
+        "fromId": { "type": "string" },
+        "fromName": { "type": "string" },
+        "content": { "type": "string" },
+        "read": { "type": "boolean" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["recipientId", "type", "fromId", "timestamp"]
+    },
+    "View": {
+      "title": "View",
+      "description": "Records when a user views another user's profile.",
+      "type": "object",
+      "properties": {
+        "viewerId": { "type": "string" },
+        "profileId": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["viewerId", "profileId", "timestamp"]
+    }
+  },
+  "firestore": {
+    "/profiles/{userId}": {
+      "schema": "Profile",
+      "description": "Public profiles"
+    },
+    "/users/{userId}/private/info": {
+      "schema": "PrivateInfo",
+      "description": "Sensitive user data"
+    },
+    "/chats/{chatId}/messages/{messageId}": {
+      "schema": "Message",
+      "description": "Private messages in a chat"
+    },
+    "/likes/{likeId}": {
+      "schema": "Like",
+      "description": "User likes"
+    },
+    "/matches/{matchId}": {
+      "schema": "Match",
+      "description": "Mutual matches"
+    },
+    "/notifications/{notificationId}": {
+      "schema": "Notification",
+      "description": "User notifications"
+    },
+    "/views/{viewId}": {
+      "schema": "View",
+      "description": "Profile views"
+    }
+  }
+}
