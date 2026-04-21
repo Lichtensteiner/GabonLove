@@ -96,35 +96,6 @@ export default function AuthPage() {
           </p>
         </div>
 
-        <div className="space-y-4 mb-8">
-          <button 
-            type="button"
-            onClick={handleGoogleAuth} 
-            disabled={loading}
-            className="w-full h-12 flex items-center justify-center gap-3 px-4 bg-white border border-stone-200 rounded-2xl text-stone-700 font-bold text-sm shadow-sm hover:shadow-md hover:border-stone-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
-          >
-            <div className="flex items-center justify-center w-5 h-5 relative">
-              <div className="absolute inset-0 flex flex-wrap">
-                <div className="w-1/2 h-1/2 bg-[#EA4335] rounded-tl-sm" />
-                <div className="w-1/2 h-1/2 bg-[#4285F4] rounded-tr-sm" />
-                <div className="w-1/2 h-1/2 bg-[#FBBC05] rounded-bl-sm" />
-                <div className="w-1/2 h-1/2 bg-[#34A853] rounded-br-sm" />
-              </div>
-              <Chrome className="w-3.5 h-3.5 text-white z-10" />
-            </div>
-            Continuer avec Google
-          </button>
-        </div>
-
-        <div className="relative mb-8">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-stone-100"></div>
-          </div>
-          <div className="relative flex justify-center text-[10px] font-black uppercase tracking-widest">
-            <span className="bg-white px-4 text-stone-400">Ou par email</span>
-          </div>
-        </div>
-
         <AnimatePresence mode="wait">
           {!isLogin && (
             <motion.div

@@ -47,7 +47,7 @@ export default function OnboardingPage() {
         lastLogin: serverTimestamp()
       });
 
-      navigate("/home");
+      navigate("/profile");
     } catch (err) {
       console.error(err);
       alert("Erreur lors de l'enregistrement de votre profil.");

@@ -6,12 +6,12 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useEffect } from "react";
-import { doc, updateDoc } from "firebase/firestore";
-import { auth, db } from "./lib/firebase";
 import { Loader2 } from "lucide-react";
 import LandingPage from "./pages/LandingPage";
 import AuthPage from "./pages/AuthPage";
 import OnboardingPage from "./pages/OnboardingPage";
+import { db, auth } from "./lib/firebase";
+import { doc, setDoc, serverTimestamp, getDoc } from "firebase/firestore";
 import ProtectedRoute from "./components/layout/ProtectedRoute";
 import Dashboard from "./pages/Dashboard";
 import ProfilePage from "./pages/ProfilePage";
@@ -28,9 +28,14 @@ export default function App() {
     const updatePresence = async (status: boolean) => {
       try {
         const profileRef = doc(db, "profiles", user.uid);
-        await updateDoc(profileRef, { isOnline: status, lastSeen: new Date() });
+        // We use getDoc first to see if profile exists, to avoid permission errors on non-existent profiles
+        // We catch errors locally and do nothing to avoid console noise
+        const snap = await getDoc(profileRef).catch(() => null);
+        if (snap && snap.exists()) {
+          await setDoc(profileRef, { isOnline: status, lastSeen: serverTimestamp() }, { merge: true }).catch(() => null);
+        }
       } catch (err) {
-        console.error("Presence error:", err);
+        // Double safety catch
       }
     };
 

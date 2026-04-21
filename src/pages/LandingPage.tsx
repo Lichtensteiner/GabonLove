@@ -2,8 +2,11 @@ import { motion } from "motion/react";
 import { Heart, Shield, Users, Globe, ChevronRight } from "lucide-react";
 import Button from "../components/ui/Button";
 import { useNavigate } from "react-router-dom";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { auth } from "../lib/firebase";
 
 export default function LandingPage() {
+  const [user] = useAuthState(auth);
   const navigate = useNavigate();
 
   return (
@@ -18,8 +21,14 @@ export default function LandingPage() {
             <span className="font-serif text-2xl font-bold tracking-tight text-stone-900">Gabon<span className="text-love-red">Love</span></span>
           </div>
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="sm" className="hidden sm:inline-flex" onClick={() => navigate("/auth")}>Connexion</Button>
-            <Button size="sm" onClick={() => navigate("/auth")}>S'inscrire</Button>
+            {user ? (
+              <Button size="sm" onClick={() => navigate("/home")}>Mon Compte</Button>
+            ) : (
+              <>
+                <Button variant="ghost" size="sm" className="hidden sm:inline-flex" onClick={() => navigate("/auth")}>Connexion</Button>
+                <Button size="sm" onClick={() => navigate("/auth")}>S'inscrire</Button>
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -44,13 +53,15 @@ export default function LandingPage() {
                 Rejoignez des milliers de célibataires gabonais à la recherche de relations sérieuses et authentiques. Une plateforme sécurisée, locale et adaptée à notre culture.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button size="lg" className="group" onClick={() => navigate("/auth")}>
-                  Commencer l'aventure
+                <Button size="lg" className="group" onClick={() => navigate(user ? "/home" : "/auth")}>
+                  {user ? "Accéder à mon espace" : "Commencer l'aventure"}
                   <ChevronRight className="ml-2 w-5 h-5 transition-transform group-hover:translate-x-1" />
                 </Button>
-                <Button size="lg" variant="outline" onClick={() => navigate("/auth")}>
-                  En savoir plus
-                </Button>
+                {!user && (
+                  <Button size="lg" variant="outline" onClick={() => navigate("/auth")}>
+                    En savoir plus
+                  </Button>
+                )}
               </div>
             </motion.div>
 

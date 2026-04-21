@@ -30,6 +30,11 @@ service cloud.firestore {
              data.userId == request.auth.uid;
     }
 
+    // --- Health Check ---
+    match /health/check {
+      allow read: if true;
+    }
+
     // --- Collections ---
 
     // 1. Profiles (Public Info)

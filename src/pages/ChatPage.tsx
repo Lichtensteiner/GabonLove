@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef, FormEvent } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { db, auth } from "../lib/firebase";
-import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, doc, getDoc, limit } from "firebase/firestore";
-import { ArrowLeft, Send, Loader2, Phone, Video, MoreVertical } from "lucide-react";
+import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, doc, getDoc, limit, deleteDoc } from "firebase/firestore";
+import { ArrowLeft, Send, Loader2, Phone, Video, MoreVertical, Trash2, ShieldAlert, UserX } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import Button from "../components/ui/Button";
+import CallModal from "../components/CallModal";
 
 export default function ChatPage() {
   const { chatId } = useParams();
@@ -12,6 +13,9 @@ export default function ChatPage() {
   const [newMessage, setNewMessage] = useState("");
   const [otherUser, setOtherUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
+  const [activeCall, setActiveCall] = useState<{ type: 'video' | 'audio', isOpen: boolean }>({ type: 'video', isOpen: false });
+  
   const scrollRef = useRef<HTMLDivElement>(null);
   const user = auth.currentUser;
   const navigate = useNavigate();
@@ -68,6 +72,16 @@ export default function ChatPage() {
     }
   };
 
+  const deleteConversation = async () => {
+    if (!chatId || !window.confirm("Supprimer cette conversation définitivement ?")) return;
+    try {
+      await deleteDoc(doc(db, "matches", chatId));
+      navigate("/messages");
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-stone-50">
@@ -79,7 +93,7 @@ export default function ChatPage() {
   return (
     <div className="fixed inset-0 flex flex-col bg-stone-50 z-[60]">
       {/* Header */}
-      <header className="h-16 bg-white border-b border-stone-200 px-4 flex items-center justify-between shadow-sm">
+      <header className="h-16 bg-white border-b border-stone-200 px-4 flex items-center justify-between shadow-sm relative z-20">
         <div className="flex items-center gap-3">
           <button onClick={() => navigate("/messages")} className="p-2 -ml-2 text-stone-400 hover:text-stone-900 transition-colors">
             <ArrowLeft className="w-6 h-6" />
@@ -98,18 +112,72 @@ export default function ChatPage() {
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" className="text-stone-400"><Phone className="w-5 h-5" /></Button>
-          <Button variant="ghost" size="icon" className="text-stone-400"><Video className="w-5 h-5" /></Button>
-          <Button variant="ghost" size="icon" className="text-stone-400"><MoreVertical className="w-5 h-5" /></Button>
+        <div className="flex items-center gap-1">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="text-stone-400 hover:bg-stone-50"
+            onClick={() => setActiveCall({ type: 'audio', isOpen: true })}
+          >
+            <Phone className="w-5 h-5" />
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="text-stone-400 hover:bg-stone-50"
+            onClick={() => setActiveCall({ type: 'video', isOpen: true })}
+          >
+            <Video className="w-5 h-5" />
+          </Button>
+          <div className="relative">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className={`text-stone-400 hover:bg-stone-50 ${isMoreMenuOpen ? 'bg-stone-100 text-stone-900' : ''}`}
+              onClick={() => setIsMoreMenuOpen(!isMoreMenuOpen)}
+            >
+              <MoreVertical className="w-5 h-5" />
+            </Button>
+
+            <AnimatePresence>
+              {isMoreMenuOpen && (
+                <>
+                  <div className="fixed inset-0 z-10" onClick={() => setIsMoreMenuOpen(false)} />
+                  <motion.div 
+                    initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                    className="absolute right-0 top-12 w-56 bg-white rounded-2xl shadow-2xl border border-stone-100 py-2 z-20"
+                  >
+                    <button className="w-full px-4 py-3 text-left text-sm font-medium text-stone-600 hover:bg-stone-50 flex items-center gap-3 transition-colors">
+                      <ShieldAlert className="w-4 h-4 text-stone-400" />
+                      Signaler l'utilisateur
+                    </button>
+                    <button className="w-full px-4 py-3 text-left text-sm font-medium text-stone-600 hover:bg-stone-50 flex items-center gap-3 transition-colors">
+                      <UserX className="w-4 h-4 text-stone-400" />
+                      Bloquer le profil
+                    </button>
+                    <div className="h-px bg-stone-100 my-1 mx-2" />
+                    <button 
+                      onClick={deleteConversation}
+                      className="w-full px-4 py-3 text-left text-sm font-medium text-red-500 hover:bg-red-50 flex items-center gap-3 transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      Supprimer la fenêtre
+                    </button>
+                  </motion.div>
+                </>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </header>
 
       {/* Messages Area */}
       <main className="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar">
         <div className="text-center py-8">
-          <p className="text-[10px] text-stone-400 uppercase font-bold tracking-[0.2em] mb-2">Début de votre histoire</p>
-          <div className="w-12 h-1 bg-love-red mx-auto rounded-full opacity-20" />
+          <p className="text-[10px] text-stone-400 uppercase font-bold tracking-[0.2em] mb-2">Conversation sécurisée</p>
+          <div className="w-12 h-1 bg-stone-200 mx-auto rounded-full" />
         </div>
 
         <AnimatePresence initial={false}>
@@ -155,6 +223,13 @@ export default function ChatPage() {
           </Button>
         </form>
       </div>
+
+      <CallModal 
+        isOpen={activeCall.isOpen}
+        type={activeCall.type}
+        otherUser={otherUser}
+        onClose={() => setActiveCall(prev => ({ ...prev, isOpen: false }))}
+      />
     </div>
   );
 }
