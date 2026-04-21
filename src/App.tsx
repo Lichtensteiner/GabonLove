@@ -23,6 +23,8 @@ import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
 import TermsOfServicePage from "./pages/TermsOfServicePage";
 import ContactPage from "./pages/ContactPage";
 
+import BroadcastBanner from "./components/layout/BroadcastBanner";
+
 export default function App() {
   const [user, loading] = useAuthState(auth);
 
@@ -70,6 +72,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <div className="min-h-screen bg-stone-50 font-sans text-stone-900">
+        <BroadcastBanner />
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/auth" element={!user ? <AuthPage /> : <Navigate to="/home" />} />

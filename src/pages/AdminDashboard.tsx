@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { db, auth } from "../lib/firebase";
-import { collection, query, limit, doc, updateDoc, deleteDoc, onSnapshot } from "firebase/firestore";
+import { collection, query, limit, doc, updateDoc, deleteDoc, onSnapshot, orderBy, setDoc, serverTimestamp } from "firebase/firestore";
 import { 
   Shield, 
   Users, 
@@ -18,7 +18,11 @@ import {
   LogOut,
   Bell,
   Settings,
-  User
+  User,
+  Megaphone,
+  Zap,
+  TrendingUp,
+  Heart
 } from "lucide-react";
 import { motion } from "motion/react";
 import Button from "../components/ui/Button";
@@ -36,10 +40,16 @@ import { useNavigate } from "react-router-dom";
 
 export default function AdminDashboard() {
   const [users, setUsers] = useState<any[]>([]);
+  const [totalLikes, setTotalLikes] = useState(0);
+  const [totalMatches, setTotalMatches] = useState(0);
+  const [totalViews, setTotalViews] = useState(0);
   const [adminPassword, setAdminPassword] = useState("");
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeView, setActiveView] = useState<'overview' | 'users' | 'reports'>('overview');
+  const [broadcastMessage, setBroadcastMessage] = useState("");
+  const [isUpdatingBroadcast, setIsUpdatingBroadcast] = useState(false);
+  const [recentMatches, setRecentMatches] = useState<any[]>([]);
   const navigate = useNavigate();
   
   const user = auth.currentUser;
@@ -49,14 +59,35 @@ export default function AdminDashboard() {
     if (!isAdminEmail || !isUnlocked) return;
     
     // Real-time listener for all user profiles
-    const q = query(collection(db, "profiles"), limit(200));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
+    const usersQ = query(collection(db, "profiles"), orderBy("updatedAt", "desc"), limit(200));
+    const unsubUsers = onSnapshot(usersQ, (snapshot) => {
       setUsers(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
-    }, (err) => {
-      console.error(err);
     });
 
-    return () => unsubscribe();
+    // Real-time listener for broadcast
+    const unsubBroadcast = onSnapshot(doc(db, "settings", "config"), (snap) => {
+      if (snap.exists()) setBroadcastMessage(snap.data().broadcast || "");
+    });
+
+    // Real-time listener for recent matches
+    const matchesQ = query(collection(db, "matches"), orderBy("timestamp", "desc"), limit(5));
+    const unsubMatches = onSnapshot(matchesQ, (snapshot) => {
+      setRecentMatches(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
+    });
+
+    // Real-time counts for indicators
+    const unsubTotalLikes = onSnapshot(collection(db, "likes"), (snap) => setTotalLikes(snap.size));
+    const unsubTotalMatches = onSnapshot(collection(db, "matches"), (snap) => setTotalMatches(snap.size));
+    const unsubTotalViews = onSnapshot(collection(db, "views"), (snap) => setTotalViews(snap.size));
+
+    return () => {
+      unsubUsers();
+      unsubBroadcast();
+      unsubMatches();
+      unsubTotalLikes();
+      unsubTotalMatches();
+      unsubTotalViews();
+    };
   }, [isAdminEmail, isUnlocked]);
 
   const stats = useMemo(() => {
@@ -64,21 +95,44 @@ export default function AdminDashboard() {
     const online = users.filter(u => u.isOnline).length;
     const banned = users.filter(u => u.isBanned).length;
     const women = users.filter(u => u.gender === 'Femme').length;
-    const men = total - women;
     
-    return { total, online, banned, men, women };
-  }, [users]);
+    return { 
+      total, 
+      online, 
+      banned, 
+      women,
+      likes: totalLikes,
+      matches: totalMatches,
+      views: totalViews
+    };
+  }, [users, totalLikes, totalMatches, totalViews]);
 
-  // Mock data for the chart (In a real app, you'd aggregate this from Firestore)
-  const chartData = [
-    { name: 'Lun', users: 12, activity: 45 },
-    { name: 'Mar', users: 18, activity: 52 },
-    { name: 'Mer', users: 15, activity: 48 },
-    { name: 'Jeu', users: 22, activity: 61 },
-    { name: 'Ven', users: 30, activity: 75 },
-    { name: 'Sam', users: 45, activity: 92 },
-    { name: 'Dim', users: 38, activity: 80 },
-  ];
+  // Real-time chart data base on user registrations (updatedAt proxy)
+  const chartData = useMemo(() => {
+    const last7Days = Array.from({ length: 7 }, (_, i) => {
+      const d = new Date();
+      d.setDate(d.getDate() - (6 - i));
+      return { 
+        date: d.toISOString().split('T')[0], 
+        label: d.toLocaleDateString('fr-FR', { weekday: 'short' }),
+        count: 0 
+      };
+    });
+
+    users.forEach(u => {
+      if (u.updatedAt) {
+        const date = u.updatedAt.toDate ? u.updatedAt.toDate() : new Date(u.updatedAt);
+        const dayStr = date.toISOString().split('T')[0];
+        const day = last7Days.find(d => d.date === dayStr);
+        if (day) day.count++;
+      }
+    });
+
+    return last7Days.map(d => ({ 
+      name: d.label.charAt(0).toUpperCase() + d.label.slice(1), 
+      users: d.count 
+    }));
+  }, [users]);
 
   const handleVerify = () => {
     if (adminPassword === "password") {
@@ -104,6 +158,32 @@ export default function AdminDashboard() {
       await deleteDoc(doc(db, "profiles", userId));
     } catch (err) {
       console.error(err);
+    }
+  };
+
+  const toggleVerification = async (userId: string, currentStatus: boolean) => {
+    try {
+      await updateDoc(doc(db, "profiles", userId), {
+        isVerified: !currentStatus
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const updateBroadcast = async () => {
+    setIsUpdatingBroadcast(true);
+    try {
+      await setDoc(doc(db, "settings", "config"), {
+        broadcast: broadcastMessage,
+        updatedAt: serverTimestamp(),
+        updatedBy: user?.email
+      });
+    } catch (err) {
+      console.error(err);
+      alert("Erreur lors de la mise à jour du message global.");
+    } finally {
+      setIsUpdatingBroadcast(false);
     }
   };
 
@@ -226,10 +306,10 @@ export default function AdminDashboard() {
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
               {/* Stats Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                 <StatCard icon={Users} label="Total Users" value={stats.total} trend="+12%" color="text-rose-600" bg="bg-rose-50" />
-                 <StatCard icon={Activity} label="En Ligne" value={stats.online} trend="En direct" color="text-green-600" bg="bg-green-50" />
-                 <StatCard icon={Ban} label="Suspendus" value={stats.banned} trend="Définitif" color="text-amber-600" bg="bg-amber-50" />
-                 <StatCard icon={UserPlus} label="Nouveaux" value="24" trend="Aujourd'hui" color="text-blue-600" bg="bg-blue-50" />
+                 <StatCard icon={Users} label="Total Utilisateurs" value={stats.total} trend={`${stats.online} en ligne`} color="text-rose-600" bg="bg-rose-50" />
+                 <StatCard icon={Heart} label="Total Likes" value={stats.likes} trend="Cœur" color="text-pink-600" bg="bg-pink-50" />
+                 <StatCard icon={TrendingUp} label="Matches" value={stats.matches} trend="Direct" color="text-green-600" bg="bg-green-50" />
+                 <StatCard icon={Activity} label="Vues Profil" value={stats.views} trend="Intérêt" color="text-blue-600" bg="bg-blue-50" />
               </div>
 
               {/* Charts Section */}
@@ -265,18 +345,91 @@ export default function AdminDashboard() {
 
                  <div className="bg-stone-900 rounded-[2.5rem] p-8 text-white flex flex-col justify-between overflow-hidden relative group">
                     <div className="relative z-10">
-                       <Shield className="w-10 h-10 text-rose-500 mb-6" />
-                       <h3 className="text-2xl font-serif font-bold italic mb-4">Statut Système</h3>
-                       <div className="space-y-4 mb-8">
-                          <StatusRow label="Firestore" status="Opérationnel" />
-                          <StatusRow label="Authentication" status="Opérationnel" />
-                          <StatusRow label="Cloud Storage" status="Fixing..." warning />
+                       <Megaphone className="w-10 h-10 text-rose-500 mb-6" />
+                       <h3 className="text-2xl font-serif font-bold italic mb-4">Message Global</h3>
+                       <p className="text-stone-400 text-sm mb-6 leading-relaxed">
+                          Ce message sera visible par tous les utilisateurs en haut de leur écran.
+                       </p>
+                       <div className="space-y-4 mb-4">
+                          <textarea 
+                             value={broadcastMessage}
+                             onChange={(e) => setBroadcastMessage(e.target.value)}
+                             placeholder="Ex: Bienvenue sur la nouvelle version de GabonLove ! 🇬🇦"
+                             className="w-full bg-stone-800 border-none rounded-2xl p-4 text-sm text-white placeholder:text-stone-600 outline-none focus:ring-2 focus:ring-rose-500/50 transition-all resize-none h-24"
+                          />
                        </div>
-                       <Button className="w-full h-14 bg-white text-stone-900 hover:bg-stone-100 rounded-2xl font-bold">
-                          Actualiser les Services
+                       <Button 
+                          onClick={updateBroadcast}
+                          disabled={isUpdatingBroadcast}
+                          className="w-full h-14 bg-white text-stone-900 hover:bg-stone-100 rounded-2xl font-bold gap-2"
+                       >
+                          {isUpdatingBroadcast ? "Mise à jour..." : "Publier l'Annonce"}
+                          <Zap className="w-4 h-4 fill-current" />
                        </Button>
                     </div>
-                    <Shield className="absolute -bottom-10 -right-10 w-48 h-48 text-white/5 group-hover:scale-110 transition-transform duration-700" />
+                    <Megaphone className="absolute -bottom-10 -right-10 w-48 h-48 text-white/5 group-hover:scale-110 transition-transform duration-700" />
+                 </div>
+              </div>
+
+              {/* Live Activity Feed */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                 <div className="bg-white rounded-[2.5rem] p-8 border border-stone-100 shadow-sm">
+                    <div className="flex items-center justify-between mb-8">
+                       <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center">
+                             <UserPlus className="w-5 h-5" />
+                          </div>
+                          <h3 className="font-bold text-stone-800 text-lg">Dernières Inscriptions</h3>
+                       </div>
+                    </div>
+                    <div className="space-y-4">
+                       {users.slice(0, 5).map((u) => (
+                          <div key={u.id} className="flex items-center justify-between p-4 bg-stone-50 rounded-2xl border border-transparent hover:border-stone-200 transition-all">
+                             <div className="flex items-center gap-3">
+                                <img src={u.mainPhoto || `https://api.dicebear.com/7.x/avataaars/svg?seed=${u.id}`} className="w-10 h-10 rounded-xl object-cover" referrerPolicy="no-referrer" />
+                                <div>
+                                   <p className="text-sm font-bold text-stone-800">{u.displayName}</p>
+                                   <p className="text-[10px] text-stone-400 uppercase font-black tracking-widest">{u.city}</p>
+                                </div>
+                             </div>
+                             <div className="text-right">
+                                <p className="text-[10px] text-stone-400 font-bold uppercase">Nouveau membre</p>
+                                <span className="text-[10px] text-green-500 font-bold">À l'instant</span>
+                             </div>
+                          </div>
+                       ))}
+                    </div>
+                 </div>
+
+                 <div className="bg-white rounded-[2.5rem] p-8 border border-stone-100 shadow-sm">
+                    <div className="flex items-center justify-between mb-8">
+                       <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-rose-50 text-rose-600 rounded-xl flex items-center justify-center">
+                             <Heart className="w-5 h-5 fill-current" />
+                          </div>
+                          <h3 className="font-bold text-stone-800 text-lg">Matches en Direct</h3>
+                       </div>
+                    </div>
+                    <div className="space-y-4">
+                       {recentMatches.length > 0 ? recentMatches.map((m) => (
+                          <div key={m.id} className="flex items-center justify-between p-4 bg-rose-50/30 rounded-2xl border border-rose-100/50">
+                             <div className="flex items-center -space-x-4">
+                                <div className="w-10 h-10 rounded-xl bg-stone-200 border-2 border-white overflow-hidden shadow-sm flex items-center justify-center text-[10px] font-bold text-rose-600 italic">U1</div>
+                                <div className="w-10 h-10 rounded-xl bg-stone-200 border-2 border-white overflow-hidden shadow-sm flex items-center justify-center text-[10px] font-bold text-rose-700 italic">U2</div>
+                             </div>
+                             <div className="flex-1 px-8">
+                                <p className="text-xs font-bold text-stone-800">Nouveau match !</p>
+                                <p className="text-[10px] text-stone-400 uppercase tracking-widest">Coup de foudre ⚡️</p>
+                             </div>
+                             <TrendingUp className="w-5 h-5 text-rose-400" />
+                          </div>
+                       )) : (
+                          <div className="h-40 flex flex-col items-center justify-center text-stone-300 gap-2">
+                             <Heart className="w-8 h-8 opacity-20" />
+                             <p className="text-xs font-medium italic">En attente de nouveaux matches...</p>
+                          </div>
+                       )}
+                    </div>
                  </div>
               </div>
             </motion.div>
@@ -329,6 +482,7 @@ export default function AdminDashboard() {
                                 <div className="max-w-[200px]">
                                   <p className={`font-bold block truncate ${u.isBanned ? 'text-rose-600' : 'text-stone-800'}`}>
                                     {u.displayName}
+                                    {u.isVerified && <Shield className="w-3 h-3 text-blue-500 fill-blue-500 inline ml-1" />}
                                   </p>
                                   <p className="text-[10px] font-medium text-stone-400 truncate tracking-tight">{u.email || u.id}</p>
                                 </div>
@@ -350,6 +504,15 @@ export default function AdminDashboard() {
                             </td>
                             <td className="px-8 py-5">
                               <div className="flex gap-2 justify-end opacity-0 group-hover:opacity-100 transition-opacity">
+                                <Button 
+                                  size="icon" 
+                                  variant="ghost" 
+                                  onClick={() => toggleVerification(u.id, !!u.isVerified)}
+                                  className={`h-10 w-10 ${u.isVerified ? 'text-blue-600' : 'text-stone-400'} hover:text-blue-600 bg-stone-50 rounded-xl`}
+                                  title={u.isVerified ? "Révoquer Certification" : "Certifier"}
+                                >
+                                  <Shield className={`w-4 h-4 ${u.isVerified ? 'fill-current' : ''}`} />
+                                </Button>
                                 <Button 
                                   size="icon" 
                                   variant="ghost" 
@@ -438,13 +601,3 @@ function StatCard({ icon: Icon, label, value, trend, color, bg }: { icon: any, l
   );
 }
 
-function StatusRow({ label, status, warning }: { label: string, status: string, warning?: boolean }) {
-  return (
-    <div className="flex items-center justify-between">
-       <span className="text-xs font-bold text-stone-500 uppercase tracking-widest">{label}</span>
-       <span className={`text-xs font-black uppercase tracking-widest ${warning ? 'text-amber-500' : 'text-green-500'}`}>
-          {status}
-       </span>
-    </div>
-  );
-}

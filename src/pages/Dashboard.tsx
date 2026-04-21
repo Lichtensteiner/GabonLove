@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { db, auth } from "../lib/firebase";
-import { collection, query, where, getDocs, limit, addDoc, serverTimestamp, getDoc, doc, onSnapshot, updateDoc, orderBy } from "firebase/firestore";
+import { collection, query, where, getDocs, limit, addDoc, serverTimestamp, getDoc, doc, onSnapshot, orderBy } from "firebase/firestore";
 import { motion, AnimatePresence } from "motion/react";
-import { MapPin, Heart, X, MessageCircle, SlidersHorizontal, Loader2, Star, AlertTriangle, MessageSquareText, MoreVertical, ShieldAlert, UserX, Users, Plus, Sparkles } from "lucide-react";
+import { MapPin, Heart, X, MessageCircle, Loader2, Star, AlertTriangle, MessageSquareText, MoreVertical, ShieldAlert, UserX, Users, Plus, Sparkles } from "lucide-react";
 import NavBar from "../components/layout/NavBar";
 import Button from "../components/ui/Button";
 import TestimonyModal from "../components/TestimonyModal";
@@ -19,6 +19,7 @@ interface Profile {
   mainPhoto?: string;
   lookingFor: string;
   isOnline?: boolean;
+  isVerified?: boolean;
 }
 
 interface Story {
@@ -354,7 +355,10 @@ export default function Dashboard() {
                   
                   <div className="absolute bottom-6 left-6 right-6 text-white">
                     <div className="flex items-baseline gap-2">
-                      <h2 className="text-3xl font-bold">{currentProfile.displayName}</h2>
+                      <h2 className="text-3xl font-bold flex items-center gap-2">
+                        {currentProfile.displayName}
+                        {currentProfile.isVerified && <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center shadow-lg"><Heart className="w-3 h-3 text-white fill-current" /></div>}
+                      </h2>
                       <span className="text-xl opacity-80">{calculateAge(currentProfile.birthDate)}</span>
                     </div>
                     <div className="flex items-center gap-1.5 mt-1 text-sm opacity-90">

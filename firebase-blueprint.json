@@ -15,7 +15,9 @@
         "photos": { "type": "array", "items": { "type": "string" }, "description": "URLs of profile photos" },
         "mainPhoto": { "type": "string", "description": "Primary profile photo URL" },
         "updatedAt": { "type": "string", "format": "date-time" },
-        "isOnline": { "type": "boolean" }
+        "isOnline": { "type": "boolean" },
+        "isVerified": { "type": "boolean" },
+        "isBanned": { "type": "boolean" }
       },
       "required": ["displayName", "gender", "birthDate", "city"]
     },
@@ -127,9 +129,23 @@
         "timestamp": { "type": "string", "format": "date-time" }
       },
       "required": ["type", "fromId", "toId", "timestamp"]
+    },
+    "AdminSettings": {
+      "title": "Admin Settings",
+      "description": "Global application settings controlled by admins.",
+      "type": "object",
+      "properties": {
+        "broadcast": { "type": "string", "description": "Global message content" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "updatedBy": { "type": "string" }
+      }
     }
   },
   "firestore": {
+    "/settings/config": {
+      "schema": "AdminSettings",
+      "description": "Global app configuration"
+    },
     "/profiles/{userId}": {
       "schema": "Profile",
       "description": "Public profiles"

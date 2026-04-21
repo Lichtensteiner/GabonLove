@@ -125,6 +125,11 @@ export default function ProfilePage() {
           </div>
           <div className="flex items-center gap-2 mt-8">
             <h1 className="text-3xl font-serif font-bold italic text-stone-900">{profile?.displayName || "Nom d'utilisateur"}</h1>
+            {profile?.isVerified && (
+              <div className="bg-blue-500 p-1.5 rounded-lg shadow-lg shadow-blue-500/20" title="Profil Vérifié">
+                <Shield className="w-4 h-4 text-white fill-current" />
+              </div>
+            )}
             {isAdmin && (
               <div className="bg-rose-600 p-1.5 rounded-lg shadow-lg shadow-rose-600/20" title="Administrateur Certifié">
                 <Shield className="w-4 h-4 text-white fill-current" />

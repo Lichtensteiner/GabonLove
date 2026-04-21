@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { PhoneOff, MicOff, Mic, VideoOff, Video, RotateCw, Maximize2 } from "lucide-react";
+import { PhoneOff, MicOff, Mic, VideoOff, Video, RotateCw } from "lucide-react";
 import Button from "./ui/Button";
 
 interface CallModalProps {
   isOpen: boolean;
   onClose: () => void;
-  otherUser: any;
+  otherUser: { userId: string; displayName: string; mainPhoto?: string };
   type: "video" | "audio";
 }
 
