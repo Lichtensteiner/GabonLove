@@ -100,12 +100,43 @@
         "timestamp": { "type": "string", "format": "date-time" }
       },
       "required": ["authorId", "targetId", "content", "timestamp"]
+    },
+    "Story": {
+      "title": "Story",
+      "description": "A temporary status update or story posted by a user.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "userPhoto": { "type": "string" },
+        "content": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "expiresAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "content", "timestamp"]
+    },
+    "Interaction": {
+      "title": "Interaction",
+      "description": "User moderation interaction (report, block).",
+      "type": "object",
+      "properties": {
+        "type": { "type": "string", "enum": ["report", "block"] },
+        "fromId": { "type": "string" },
+        "toId": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["type", "fromId", "toId", "timestamp"]
     }
   },
   "firestore": {
     "/profiles/{userId}": {
       "schema": "Profile",
       "description": "Public profiles"
+    },
+    "/stories/{storyId}": {
+      "schema": "Story",
+      "description": "User status stories"
     },
     "/users/{userId}/private/info": {
       "schema": "PrivateInfo",
@@ -130,6 +161,10 @@
     "/views/{viewId}": {
       "schema": "View",
       "description": "Profile views"
+    },
+    "/interactions/{interactionId}": {
+      "schema": "Interaction",
+      "description": "User moderation interactions like signal or block"
     }
   }
 }

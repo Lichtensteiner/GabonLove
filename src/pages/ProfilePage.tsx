@@ -16,7 +16,8 @@ import {
   Settings,
   ShieldCheck,
   CreditCard,
-  Bell
+  Bell,
+  Sparkles
 } from "lucide-react";
 import NavBar from "../components/layout/NavBar";
 import Button from "../components/ui/Button";
@@ -188,6 +189,33 @@ export default function ProfilePage() {
 
               {activeTab === 'preferences' && (
                 <>
+                  <div className="bg-gradient-to-br from-love-red to-orange-500 p-8 rounded-[2.5rem] text-white shadow-xl shadow-rose-100 flex flex-col items-center text-center gap-4 mb-4">
+                     <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center">
+                        <Sparkles className="w-8 h-8 text-white" />
+                     </div>
+                     <div>
+                       <h3 className="font-serif font-bold text-lg italic">Invitez des amis !</h3>
+                       <p className="text-white/80 text-[10px] font-bold uppercase tracking-widest leading-normal">Aidez la communauté à grandir et débloquez des avantages exclusifs.</p>
+                     </div>
+                     <Button 
+                      className="w-full bg-white text-love-red hover:bg-stone-50 rounded-2xl shadow-lg shadow-black/10"
+                      onClick={() => {
+                        if (navigator.share) {
+                          navigator.share({
+                            title: 'Rejoignez-moi sur GabonLove !',
+                            text: 'La meilleure application pour rencontrer des Gabonais(es) de qualité.',
+                            url: window.location.origin
+                          }).catch(console.error);
+                        } else {
+                          navigator.clipboard.writeText(window.location.origin);
+                          alert("Lien copié dans le presse-papier !");
+                        }
+                      }}
+                     >
+                        Partager l'application
+                     </Button>
+                  </div>
+                  
                   <OptionItem 
                     icon={Heart} 
                     label="Je recherche" 

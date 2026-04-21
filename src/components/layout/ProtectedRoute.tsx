@@ -13,11 +13,18 @@ export default function ProtectedRoute({ children }: { children: ReactNode }) {
   useEffect(() => {
     async function checkOnboarding() {
       if (user) {
-        const docRef = doc(db, "users", user.uid, "private", "info");
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          setOnboardingComplete(docSnap.data().onboardingComplete === true);
-        } else {
+        try {
+          const docRef = doc(db, "users", user.uid, "private", "info");
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists()) {
+            setOnboardingComplete(docSnap.data().onboardingComplete === true);
+          } else {
+            setOnboardingComplete(false);
+          }
+        } catch (err) {
+          console.error("Onboarding check error:", err);
+          // If we can't read it (e.g., permission error because it doesn't exist yet)
+          // we assume onboarding is not complete
           setOnboardingComplete(false);
         }
       } else {

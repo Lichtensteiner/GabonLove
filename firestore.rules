@@ -1,5 +1,4 @@
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
     // 0. Global Safety Net
@@ -19,7 +18,6 @@ service cloud.firestore {
     function incoming() { return request.resource.data; }
     function existing() { return resource.data; }
     function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
-    function isVerified() { return request.auth.token.email_verified == true; }
 
     // --- Profile Validation ---
     function isValidProfile(data) {
@@ -35,19 +33,17 @@ service cloud.firestore {
       allow read: if true;
     }
 
-    // --- Collections ---
-
     // 1. Profiles (Public Info)
     match /profiles/{userId} {
       allow get: if isSignedIn();
-      allow list: if isSignedIn(); // Filtering happens on resource.data, but list is generally okay for discovery
+      allow list: if isSignedIn();
       allow create: if isOwner(userId) && isValidProfile(incoming());
       allow update: if isOwner(userId) && (
         incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'gender', 'birthDate', 'city', 'bio', 'lookingFor', 'mainPhoto', 'photos', 'updatedAt', 'isOnline', 'lastSeen'])
       );
     }
 
-    // 2. Private User Data (PII Isolation)
+    // 2. Private User Data
     match /users/{userId} {
        match /private/info {
          allow read: if isOwner(userId) || isAdmin();
@@ -55,12 +51,9 @@ service cloud.firestore {
        }
     }
 
-    // 3. Messages (Interaction)
+    // 3. Messages
     match /chats/{chatId}/messages/{messageId} {
-      // ChatId usually contains both user IDs sorted
-      function isInChat() {
-        return isSignedIn() && (chatId.contains(request.auth.uid));
-      }
+      function isInChat() { return isSignedIn() && (chatId.contains(request.auth.uid)); }
       allow read: if isInChat();
       allow create: if isInChat() && incoming().senderId == request.auth.uid;
       allow update: if isInChat() && incoming().diff(existing()).affectedKeys().hasOnly(['read']);
@@ -69,7 +62,7 @@ service cloud.firestore {
     // 4. Likes
     match /likes/{likeId} {
       allow read: if isSignedIn() && (resource.data.fromId == request.auth.uid || resource.data.toId == request.auth.uid);
-      allow create: if isSignedIn() && incoming().fromId == request.auth.uid && exists(/databases/$(database)/documents/profiles/$(incoming().toId));
+      allow create: if isSignedIn() && incoming().fromId == request.auth.uid;
       allow delete: if isSignedIn() && resource.data.fromId == request.auth.uid;
     }
 
@@ -79,25 +72,34 @@ service cloud.firestore {
     }
 
     // 6. Notifications
-    match /notifications/{notificationId} {
-      allow read: if isSignedIn() && resource.data.recipientId == request.auth.uid;
-      allow update: if isSignedIn() && resource.data.recipientId == request.auth.uid && (
-        incoming().diff(existing()).affectedKeys().hasOnly(['read'])
-      );
-      allow delete: if isSignedIn() && resource.data.recipientId == request.auth.uid;
+    match /notifications/{id} {
+      allow read, update, delete: if isSignedIn() && resource.data.recipientId == request.auth.uid;
+      allow create: if isSignedIn();
     }
 
     // 7. Views
-    match /views/{viewId} {
+    match /views/{id} {
       allow read: if isSignedIn() && resource.data.profileId == request.auth.uid;
       allow create: if isSignedIn() && incoming().viewerId == request.auth.uid;
     }
 
-    // 8. Reviews / Encouragements
-    match /reviews/{reviewId} {
+    // 8. Reviews
+    match /reviews/{id} {
       allow read: if isSignedIn();
       allow create: if isSignedIn() && incoming().authorId == request.auth.uid;
-      allow delete: if isSignedIn() && resource.data.authorId == request.auth.uid;
+    }
+
+    // 9. Stories
+    match /stories/{id} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && incoming().userId == request.auth.uid;
+      allow delete: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+    }
+
+    // 10. Interactions
+    match /interactions/{id} {
+      allow create: if isSignedIn();
+      allow read: if isAdmin();
     }
   }
 }

@@ -149,11 +149,38 @@ export default function ChatPage() {
                     exit={{ opacity: 0, scale: 0.95, y: -10 }}
                     className="absolute right-0 top-12 w-56 bg-white rounded-2xl shadow-2xl border border-stone-100 py-2 z-20"
                   >
-                    <button className="w-full px-4 py-3 text-left text-sm font-medium text-stone-600 hover:bg-stone-50 flex items-center gap-3 transition-colors">
+                    <button 
+                      onClick={async () => {
+                        if (!user || !otherUser) return;
+                        await addDoc(collection(db, "interactions"), {
+                          type: "report",
+                          fromId: user.uid,
+                          toId: otherUser.userId,
+                          timestamp: serverTimestamp()
+                        });
+                        alert("Signalement enregistré.");
+                        setIsMoreMenuOpen(false);
+                      }}
+                      className="w-full px-4 py-3 text-left text-sm font-medium text-stone-600 hover:bg-stone-50 flex items-center gap-3 transition-colors"
+                    >
                       <ShieldAlert className="w-4 h-4 text-stone-400" />
                       Signaler l'utilisateur
                     </button>
-                    <button className="w-full px-4 py-3 text-left text-sm font-medium text-stone-600 hover:bg-stone-50 flex items-center gap-3 transition-colors">
+                    <button 
+                      onClick={async () => {
+                        if (!user || !otherUser) return;
+                        await addDoc(collection(db, "interactions"), {
+                          type: "block",
+                          fromId: user.uid,
+                          toId: otherUser.userId,
+                          timestamp: serverTimestamp()
+                        });
+                        alert("Utilisateur bloqué.");
+                        setIsMoreMenuOpen(false);
+                        navigate("/messages");
+                      }}
+                      className="w-full px-4 py-3 text-left text-sm font-medium text-stone-600 hover:bg-stone-50 flex items-center gap-3 transition-colors"
+                    >
                       <UserX className="w-4 h-4 text-stone-400" />
                       Bloquer le profil
                     </button>

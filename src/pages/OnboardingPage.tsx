@@ -30,12 +30,19 @@ export default function OnboardingPage() {
     if (!user) return;
     setLoading(true);
     try {
+      // Determine default image based on gender
+      const defaultAvatar = formData.gender === "Femme" 
+        ? `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.uid}&top=longHair&hairColor=black` 
+        : `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.uid}&top=shortHair&hairColor=black`;
+
+      const mainPhoto = user.photoURL || defaultAvatar;
+
       // Save public profile
       await setDoc(doc(db, "profiles", user.uid), {
         ...formData,
         userId: user.uid,
-        mainPhoto: user.photoURL || "",
-        photos: user.photoURL ? [user.photoURL] : [],
+        mainPhoto: mainPhoto,
+        photos: [mainPhoto],
         updatedAt: serverTimestamp(),
         isOnline: true
       });
@@ -48,9 +55,13 @@ export default function OnboardingPage() {
       });
 
       navigate("/profile");
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert("Erreur lors de l'enregistrement de votre profil.");
+      if (err.code === 'permission-denied') {
+        alert("Erreur de permission Firestore ! Veuillez vérifier que vous avez bien publié les règles de sécurité dans la console Firebase.");
+      } else {
+        alert("Erreur lors de l'enregistrement de votre profil.");
+      }
     } finally {
       setLoading(false);
     }

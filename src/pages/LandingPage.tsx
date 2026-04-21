@@ -1,7 +1,7 @@
 import { motion } from "motion/react";
 import { Heart, Shield, Users, Globe, ChevronRight } from "lucide-react";
 import Button from "../components/ui/Button";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "../lib/firebase";
 
@@ -20,9 +20,12 @@ export default function LandingPage() {
             </div>
             <span className="font-serif text-2xl font-bold tracking-tight text-stone-900">Gabon<span className="text-love-red">Love</span></span>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
             {user ? (
-              <Button size="sm" onClick={() => navigate("/home")}>Mon Compte</Button>
+              <>
+                <Button variant="ghost" size="sm" onClick={() => auth.signOut()}>Déconnexion</Button>
+                <Button size="sm" onClick={() => navigate("/home")}>Mon Compte</Button>
+              </>
             ) : (
               <>
                 <Button variant="ghost" size="sm" className="hidden sm:inline-flex" onClick={() => navigate("/auth")}>Connexion</Button>
@@ -73,15 +76,15 @@ export default function LandingPage() {
             >
               <div className="relative z-10 rounded-3xl overflow-hidden shadow-2xl border-8 border-white aspect-[4/5] max-w-md mx-auto transform rotate-2">
                 <img 
-                  src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=1288" 
-                  alt="Couple gabonais" 
+                  src="/Dev_4.png" 
+                  alt="Ludovic - GabonLove" 
                   className="w-full h-full object-cover"
                   referrerPolicy="no-referrer"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                <div className="absolute bottom-6 left-6 text-white">
-                  <p className="font-serif text-xl">"J'ai trouvé mon âme sœur à Libreville grâce à GabonLove."</p>
-                  <p className="text-sm opacity-80 mt-1">— Sarah, 28 ans</p>
+                <div className="absolute bottom-6 left-6 text-white p-4">
+                  <p className="font-serif text-xl italic">"J'ai trouvé mon âme sœur à Libreville grâce à GabonLove."</p>
+                  <p className="text-sm opacity-80 mt-1 font-bold">— Dev Ludovic, 30 ans</p>
                 </div>
               </div>
               {/* Decorative elements */}
@@ -134,10 +137,10 @@ export default function LandingPage() {
             <p className="text-sm text-stone-500">© 2024 Ludo_Consulting. Fait avec passion à Libreville.</p>
           </div>
           <div className="flex gap-8 text-sm font-medium text-stone-600">
-            <a href="#" className="hover:text-love-red">À propos</a>
-            <a href="#" className="hover:text-love-red">Confidentialité</a>
-            <a href="#" className="hover:text-love-red">CGU</a>
-            <a href="#" className="hover:text-love-red">Contact</a>
+            <Link to="/about" className="hover:text-love-red transition-colors">À propos</Link>
+            <Link to="/privacy" className="hover:text-love-red transition-colors">Confidentialité</Link>
+            <Link to="/terms" className="hover:text-love-red transition-colors">CGU</Link>
+            <Link to="/contact" className="hover:text-love-red transition-colors">Contact</Link>
           </div>
         </div>
       </footer>

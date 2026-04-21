@@ -13,11 +13,30 @@
 
 @layer base {
   body {
-    @apply bg-stone-50 text-stone-900 antialiased;
+    @apply bg-stone-50 text-stone-900 antialiased overflow-x-hidden;
   }
   
   h1, h2, h3, h4, h5, h6 {
     @apply font-serif font-semibold;
   }
+}
+
+@utility no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@layer utilities {
+  .animate-spin-slow {
+    animation: spin 8s linear infinite;
+  }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 

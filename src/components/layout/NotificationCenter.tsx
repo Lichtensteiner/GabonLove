@@ -94,7 +94,7 @@ export default function NotificationCenter() {
                           <span className="font-bold">{n.fromName}</span> {n.content || (n.type === 'like' ? 'a aimé votre profil' : n.type === 'match' ? 'est votre nouveau match !' : 'vous a envoyé un message')}
                         </p>
                         <p className="text-[10px] text-stone-400 font-medium">
-                          {formatDistanceToNow(n.timestamp.toDate(), { addSuffix: true, locale: fr })}
+                          {n.timestamp ? formatDistanceToNow(n.timestamp.toDate(), { addSuffix: true, locale: fr }) : "À l'instant"}
                         </p>
                       </div>
                       {!n.read && <div className="w-2 h-2 rounded-full bg-love-red mt-2" />}

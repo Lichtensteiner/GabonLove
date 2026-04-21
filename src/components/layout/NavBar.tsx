@@ -1,4 +1,4 @@
-import { Heart, MessageCircle, User, LogOut } from "lucide-react";
+import { Heart, MessageCircle, User, LogOut, Home } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { auth } from "../../lib/firebase";
 import { signOut } from "firebase/auth";
@@ -6,9 +6,9 @@ import NotificationCenter from "./NotificationCenter";
 
 export default function NavBar() {
   const location = useLocation();
-  const user = auth.currentUser;
 
   const tabs = [
+    { name: "Accueil", icon: Home, path: "/" },
     { name: "Découvrir", icon: Heart, path: "/home" },
     { name: "Messages", icon: MessageCircle, path: "/messages" },
     { name: "Profil", icon: User, path: "/profile" },
@@ -17,7 +17,7 @@ export default function NavBar() {
   return (
     <nav className="fixed bottom-0 sm:top-0 sm:bottom-auto w-full bg-white/80 backdrop-blur-md border-t sm:border-t-0 sm:border-b border-stone-200 z-50 h-16 shadow-lg sm:shadow-sm">
       <div className="max-w-7xl mx-auto h-full px-4 flex items-center justify-between gap-4">
-        <Link to="/home" className="hidden sm:flex items-center gap-2">
+        <Link to="/" className="hidden sm:flex items-center gap-2">
           <div className="w-8 h-8 bg-love-red rounded-lg flex items-center justify-center transform rotate-12">
             <Heart className="w-5 h-5 text-white fill-current" />
           </div>

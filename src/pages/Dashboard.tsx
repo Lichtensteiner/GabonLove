@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { db, auth } from "../lib/firebase";
-import { collection, query, where, getDocs, limit, addDoc, serverTimestamp, getDoc, doc, onSnapshot, updateDoc } from "firebase/firestore";
+import { collection, query, where, getDocs, limit, addDoc, serverTimestamp, getDoc, doc, onSnapshot, updateDoc, orderBy } from "firebase/firestore";
 import { motion, AnimatePresence } from "motion/react";
-import { MapPin, Heart, X, MessageCircle, SlidersHorizontal, Loader2, Star, AlertTriangle, MessageSquareText, MoreVertical, ShieldAlert, UserX, Users } from "lucide-react";
+import { MapPin, Heart, X, MessageCircle, SlidersHorizontal, Loader2, Star, AlertTriangle, MessageSquareText, MoreVertical, ShieldAlert, UserX, Users, Plus, Sparkles } from "lucide-react";
 import NavBar from "../components/layout/NavBar";
 import Button from "../components/ui/Button";
 import TestimonyModal from "../components/TestimonyModal";
+import StoryCreator from "../components/StoryCreator";
 import { useNavigate } from "react-router-dom";
 
 interface Profile {
@@ -20,9 +21,20 @@ interface Profile {
   isOnline?: boolean;
 }
 
+interface Story {
+  id: string;
+  userId: string;
+  userName: string;
+  userPhoto: string;
+  content: string;
+  timestamp: any;
+  expiresAt: string;
+}
+
 export default function Dashboard() {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [onlineUsers, setOnlineUsers] = useState<Profile[]>([]);
+  const [stories, setStories] = useState<Story[]>([]);
   const [loading, setLoading] = useState(true);
   const [permissionError, setPermissionError] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -33,6 +45,8 @@ export default function Dashboard() {
   const [myProfile, setMyProfile] = useState<any>(null);
   const [isTestimonyOpen, setIsTestimonyOpen] = useState(false);
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
+  const [isStoryCreatorOpen, setIsStoryCreatorOpen] = useState(false);
+  const [selectedStory, setSelectedStory] = useState<Story | null>(null);
 
   useEffect(() => {
     async function fetchMyProfile() {
@@ -73,8 +87,23 @@ export default function Dashboard() {
       setLoading(false);
     });
 
+    // Listen to stories
+    const qStories = query(
+      collection(db, "stories"),
+      orderBy("timestamp", "desc"),
+      limit(20)
+    );
+
+    const unsubStories = onSnapshot(qStories, (snapshot) => {
+      const allStories = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Story));
+      const now = new Date().toISOString();
+      const valid = allStories.filter(s => s.expiresAt > now);
+      setStories(valid);
+    });
+
     return () => {
       unsubscribe();
+      unsubStories();
     };
   }, [currentUser]);
 
@@ -197,10 +226,61 @@ export default function Dashboard() {
             <h1 className="text-3xl font-serif font-bold italic">Gabon<span className="text-love-red">Love</span></h1>
             <p className="text-stone-500 text-sm italic">Trouvez la perle rare au Gabon</p>
           </div>
-          <Button variant="outline" size="icon" className="rounded-2xl">
-            <SlidersHorizontal className="w-5 h-5 text-stone-600" />
+          <Button 
+            variant="outline" 
+            size="icon" 
+            className="rounded-2xl border-stone-200"
+            onClick={() => setIsStoryCreatorOpen(true)}
+          >
+            <Plus className="w-5 h-5 text-stone-600" />
           </Button>
         </header>
+
+        {/* Stories Section */}
+        <section className="mb-10">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-love-red flex items-center gap-2">
+              <Sparkles className="w-2 h-2" />
+              Les Nouvelles du Coeur
+            </h2>
+          </div>
+          <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar -mx-4 px-4 h-24">
+            {/* Add Story Button */}
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setIsStoryCreatorOpen(true)}
+              className="flex-shrink-0 flex flex-col items-center gap-2 group"
+            >
+              <div className="w-16 h-16 rounded-3xl border-2 border-dashed border-stone-200 flex items-center justify-center group-hover:border-love-red/50 transition-colors">
+                <Plus className="w-6 h-6 text-stone-300 group-hover:text-love-red" />
+              </div>
+              <span className="text-[9px] font-black uppercase tracking-tighter text-stone-400 group-hover:text-love-red">Publier</span>
+            </motion.button>
+            
+            {/* User Stories */}
+            {stories.map((story) => (
+              <motion.button
+                key={story.id}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setSelectedStory(story)}
+                className="flex-shrink-0 flex flex-col items-center gap-2"
+              >
+                <div className="w-16 h-16 rounded-3xl p-0.5 bg-gradient-to-tr from-love-red via-gabon-yellow to-gabon-blue">
+                   <div className="w-full h-full rounded-[1.3rem] overflow-hidden border-2 border-white">
+                      <img 
+                        src={story.userPhoto || `https://api.dicebear.com/7.x/avataaars/svg?seed=${story.userId}`} 
+                        className="w-full h-full object-cover"
+                        referrerPolicy="no-referrer"
+                      />
+                   </div>
+                </div>
+                <span className="text-[9px] font-black uppercase tracking-tighter text-stone-600 truncate max-w-[64px]">
+                  {story.userName.split(' ')[0]}
+                </span>
+              </motion.button>
+            ))}
+          </div>
+        </section>
 
         {/* Online Users Section */}
         <section className="mb-10 overflow-hidden">
@@ -324,11 +404,38 @@ export default function Dashboard() {
                                 exit={{ opacity: 0, scale: 0.9, y: 10 }}
                                 className="absolute bottom-14 left-0 w-52 bg-white rounded-2xl shadow-2xl border border-stone-100 py-2 z-[70] overflow-hidden"
                               >
-                                <button className="w-full px-4 py-3 text-left text-xs font-black uppercase tracking-widest text-stone-500 hover:bg-stone-50 flex items-center gap-3 transition-colors">
+                                <button 
+                                  onClick={async () => {
+                                    if (!currentUser || !currentProfile) return;
+                                    await addDoc(collection(db, "interactions"), {
+                                      type: "report",
+                                      fromId: currentUser.uid,
+                                      toId: currentProfile.userId,
+                                      timestamp: serverTimestamp()
+                                    });
+                                    alert("Signalement enregistré.");
+                                    setIsMoreMenuOpen(false);
+                                  }}
+                                  className="w-full px-4 py-3 text-left text-xs font-black uppercase tracking-widest text-stone-500 hover:bg-stone-50 flex items-center gap-3 transition-colors"
+                                >
                                   <ShieldAlert className="w-4 h-4" />
                                   Signaler
                                 </button>
-                                <button className="w-full px-4 py-3 text-left text-xs font-black uppercase tracking-widest text-stone-500 hover:bg-stone-50 flex items-center gap-3 transition-colors">
+                                <button 
+                                  onClick={async () => {
+                                    if (!currentUser || !currentProfile) return;
+                                    await addDoc(collection(db, "interactions"), {
+                                      type: "block",
+                                      fromId: currentUser.uid,
+                                      toId: currentProfile.userId,
+                                      timestamp: serverTimestamp()
+                                    });
+                                    alert("Utilisateur bloqué.");
+                                    setIsMoreMenuOpen(false);
+                                    nextProfile();
+                                  }}
+                                  className="w-full px-4 py-3 text-left text-xs font-black uppercase tracking-widest text-stone-500 hover:bg-stone-50 flex items-center gap-3 transition-colors"
+                                >
                                   <UserX className="w-4 h-4" />
                                   Bloquer
                                 </button>
@@ -388,6 +495,66 @@ export default function Dashboard() {
             targetName={currentProfile.displayName}
           />
         )}
+
+        <StoryCreator 
+          isOpen={isStoryCreatorOpen}
+          onClose={() => setIsStoryCreatorOpen(false)}
+          myProfile={myProfile}
+        />
+
+        {/* Story Viewer Modal */}
+        <AnimatePresence>
+          {selectedStory && (
+            <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setSelectedStory(null)}
+                className="absolute inset-0 bg-stone-900/90 backdrop-blur-md"
+              />
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                className="relative w-full max-w-sm bg-white rounded-[3rem] overflow-hidden shadow-2xl"
+              >
+                <div className="p-8 space-y-6">
+                  <div className="flex items-center gap-4">
+                    <img 
+                      src={selectedStory.userPhoto || `https://api.dicebear.com/7.x/avataaars/svg?seed=${selectedStory.userId}`} 
+                      className="w-12 h-12 rounded-2xl object-cover border border-stone-100"
+                      referrerPolicy="no-referrer"
+                    />
+                    <div>
+                      <h4 className="font-serif font-bold italic">{selectedStory.userName}</h4>
+                      <p className="text-[10px] text-stone-400 font-bold uppercase tracking-widest">Posté récemment</p>
+                    </div>
+                  </div>
+                  <div className="p-6 bg-stone-50 rounded-3xl border border-stone-100 italic text-stone-700 leading-relaxed">
+                    "{selectedStory.content}"
+                  </div>
+                  <Button 
+                    className="w-full rounded-2xl"
+                    onClick={() => {
+                      handleMessage({ userId: selectedStory.userId, displayName: selectedStory.userName } as any);
+                      setSelectedStory(null);
+                    }}
+                  >
+                    <MessageCircle className="w-5 h-5 mr-2" />
+                    Répondre à la Nouvelle
+                  </Button>
+                </div>
+                <button 
+                  onClick={() => setSelectedStory(null)}
+                  className="absolute top-6 right-6 p-2 text-stone-400 hover:text-stone-900"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
       </div>
     );
   }

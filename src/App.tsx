@@ -18,6 +18,10 @@ import ProfilePage from "./pages/ProfilePage";
 import MessagesPage from "./pages/MessagesPage";
 import AdminDashboard from "./pages/AdminDashboard";
 import ChatPage from "./pages/ChatPage";
+import AboutPage from "./pages/AboutPage";
+import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
+import TermsOfServicePage from "./pages/TermsOfServicePage";
+import ContactPage from "./pages/ContactPage";
 
 export default function App() {
   const [user, loading] = useAuthState(auth);
@@ -34,7 +38,7 @@ export default function App() {
         if (snap && snap.exists()) {
           await setDoc(profileRef, { isOnline: status, lastSeen: serverTimestamp() }, { merge: true }).catch(() => null);
         }
-      } catch (err) {
+      } catch (_err) {
         // Double safety catch
       }
     };
@@ -67,7 +71,7 @@ export default function App() {
     <BrowserRouter>
       <div className="min-h-screen bg-stone-50 font-sans text-stone-900">
         <Routes>
-          <Route path="/" element={user ? <Navigate to="/home" /> : <LandingPage />} />
+          <Route path="/" element={<LandingPage />} />
           <Route path="/auth" element={!user ? <AuthPage /> : <Navigate to="/home" />} />
           
           <Route path="/onboarding" element={
@@ -105,6 +109,11 @@ export default function App() {
               <ChatPage />
             </ProtectedRoute>
           } />
+
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/privacy" element={<PrivacyPolicyPage />} />
+          <Route path="/terms" element={<TermsOfServicePage />} />
+          <Route path="/contact" element={<ContactPage />} />
 
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" />} />
