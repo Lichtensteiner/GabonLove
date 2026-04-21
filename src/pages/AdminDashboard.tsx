@@ -17,7 +17,8 @@ import {
   LayoutDashboard,
   LogOut,
   Bell,
-  Settings
+  Settings,
+  User
 } from "lucide-react";
 import { motion } from "motion/react";
 import Button from "../components/ui/Button";
@@ -33,7 +34,6 @@ import {
 
 export default function AdminDashboard() {
   const [users, setUsers] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
   const [adminPassword, setAdminPassword] = useState("");
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -49,10 +49,8 @@ export default function AdminDashboard() {
     const q = query(collection(db, "profiles"), limit(200));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       setUsers(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
-      setLoading(false);
     }, (err) => {
       console.error(err);
-      setLoading(false);
     });
 
     return () => unsubscribe();
@@ -179,7 +177,8 @@ export default function AdminDashboard() {
           <SidebarLink active={activeView === 'users'} icon={Users} label="Utilisateurs" onClick={() => setActiveView('users')} />
           <SidebarLink active={activeView === 'reports'} icon={AlertTriangle} label="Signalements" onClick={() => setActiveView('reports')} />
           <div className="h-px bg-stone-800 my-4" />
-          <SidebarLink active={false} icon={Bell} label="Notifications" />
+          <SidebarLink active={false} icon={LayoutDashboard} label="Accès Découverte" onClick={() => window.location.href = "/home?mode=user"} />
+          <SidebarLink active={false} icon={User} label="Mon Profil" onClick={() => window.location.href = "/profile"} />
           <SidebarLink active={false} icon={Settings} label="Paramètres" />
         </nav>
 

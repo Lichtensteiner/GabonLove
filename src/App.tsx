@@ -38,7 +38,7 @@ export default function App() {
         if (snap && snap.exists()) {
           await setDoc(profileRef, { isOnline: status, lastSeen: serverTimestamp() }, { merge: true }).catch(() => null);
         }
-      } catch (_err) {
+      } catch {
         // Double safety catch
       }
     };
@@ -82,11 +82,15 @@ export default function App() {
 
           <Route path="/home" element={
             <ProtectedRoute>
-              {(user?.email === "ludovicjusdorange@gmail.com" || user?.email === "ludo.consulting3@gmail.com") ? (
-                <Navigate to="/admin" replace />
-              ) : (
-                <Dashboard />
-              )}
+              {(() => {
+                const isAdmin = user?.email === "ludovicjusdorange@gmail.com" || user?.email === "ludo.consulting3@gmail.com";
+                const isUserMode = new URLSearchParams(window.location.search).get("mode") === "user";
+                
+                if (isAdmin && !isUserMode) {
+                  return <Navigate to="/admin" replace />;
+                }
+                return <Dashboard />;
+              })()}
             </ProtectedRoute>
           } />
 

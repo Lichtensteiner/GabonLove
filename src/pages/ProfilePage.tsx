@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { auth, db } from "../lib/firebase";
-import { doc, getDoc, updateDoc, serverTimestamp, onSnapshot, collection, query, where } from "firebase/firestore";
+import { onSnapshot, doc, collection, query, where } from "firebase/firestore";
 import { motion, AnimatePresence } from "motion/react";
 import { 
   User, 
@@ -22,7 +22,8 @@ import {
   Music,
   Dumbbell,
   Users,
-  Home
+  Home,
+  Shield
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import NavBar from "../components/layout/NavBar";
@@ -39,6 +40,7 @@ export default function ProfilePage() {
   const [stats, setStats] = useState({ likes: 0, matches: 0, views: 0 });
   const [activeTab, setActiveTab] = useState<"account" | "preferences" | "stats">("account");
   const user = auth.currentUser;
+  const isAdmin = user?.email === "ludovicjusdorange@gmail.com" || user?.email === "ludo.consulting3@gmail.com";
 
   useEffect(() => {
     if (!user) return;
@@ -121,7 +123,14 @@ export default function ProfilePage() {
               <ImageUpload />
             </div>
           </div>
-          <h1 className="mt-8 text-3xl font-serif font-bold italic text-stone-900">{profile?.displayName || "Nom d'utilisateur"}</h1>
+          <div className="flex items-center gap-2 mt-8">
+            <h1 className="text-3xl font-serif font-bold italic text-stone-900">{profile?.displayName || "Nom d'utilisateur"}</h1>
+            {isAdmin && (
+              <div className="bg-rose-600 p-1.5 rounded-lg shadow-lg shadow-rose-600/20" title="Administrateur Certifié">
+                <Shield className="w-4 h-4 text-white fill-current" />
+              </div>
+            )}
+          </div>
           <p className="text-stone-500 font-medium flex items-center gap-1.5 mt-1">
             <MapPin className="w-4 h-4 text-love-red" />
             {profile?.city || "Libreville"}, Gabon
