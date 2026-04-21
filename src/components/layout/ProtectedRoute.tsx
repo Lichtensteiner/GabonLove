@@ -7,18 +7,37 @@ import { Loader2, Ban } from "lucide-react";
 
 export default function ProtectedRoute({ children }: { children: ReactNode }) {
   const [user, loading] = useAuthState(auth);
-  const [onboardingComplete, setOnboardingComplete] = useState<boolean | null>(null);
+  const [onboardingComplete, setOnboardingComplete] = useState<boolean | null>(() => {
+    const u = auth.currentUser;
+    if (u?.email === "ludovicjusdorange@gmail.com" || u?.email === "ludo.consulting3@gmail.com") {
+      return true;
+    }
+    return null;
+  });
   const [isBanned, setIsBanned] = useState(false);
   const location = useLocation();
 
   useEffect(() => {
     async function checkUserStatus() {
       if (user) {
+        const isAdmin = user.email === "ludovicjusdorange@gmail.com" || user.email === "ludo.consulting3@gmail.com";
+        
+        // Immediate set for admins to avoid flicker/redirects
+        if (isAdmin) {
+          setOnboardingComplete(true);
+        }
+
         try {
           // Check public profile for ban status
           const profileSnap = await getDoc(doc(db, "profiles", user.uid));
           if (profileSnap.exists() && profileSnap.data().isBanned) {
             setIsBanned(true);
+            return;
+          }
+
+          if (isAdmin) {
+            // Already set, but double ensuring
+            setOnboardingComplete(true);
             return;
           }
 
@@ -31,7 +50,11 @@ export default function ProtectedRoute({ children }: { children: ReactNode }) {
           }
         } catch (err) {
           console.error("User status check error:", err);
-          setOnboardingComplete(false);
+          if (isAdmin) {
+            setOnboardingComplete(true);
+          } else {
+            setOnboardingComplete(false);
+          }
         }
       } else {
         setOnboardingComplete(null);

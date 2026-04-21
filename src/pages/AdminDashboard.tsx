@@ -32,12 +32,15 @@ import {
   Area 
 } from 'recharts';
 
+import { useNavigate } from "react-router-dom";
+
 export default function AdminDashboard() {
   const [users, setUsers] = useState<any[]>([]);
   const [adminPassword, setAdminPassword] = useState("");
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeView, setActiveView] = useState<'overview' | 'users' | 'reports'>('overview');
+  const navigate = useNavigate();
   
   const user = auth.currentUser;
   const isAdminEmail = user?.email === "ludovicjusdorange@gmail.com" || user?.email === "ludo.consulting3@gmail.com";
@@ -177,8 +180,8 @@ export default function AdminDashboard() {
           <SidebarLink active={activeView === 'users'} icon={Users} label="Utilisateurs" onClick={() => setActiveView('users')} />
           <SidebarLink active={activeView === 'reports'} icon={AlertTriangle} label="Signalements" onClick={() => setActiveView('reports')} />
           <div className="h-px bg-stone-800 my-4" />
-          <SidebarLink active={false} icon={LayoutDashboard} label="Accès Découverte" onClick={() => window.location.href = "/home?mode=user"} />
-          <SidebarLink active={false} icon={User} label="Mon Profil" onClick={() => window.location.href = "/profile"} />
+          <SidebarLink active={false} icon={LayoutDashboard} label="Accès Découverte" onClick={() => navigate("/home?mode=user")} />
+          <SidebarLink active={false} icon={User} label="Mon Profil" onClick={() => navigate("/profile")} />
           <SidebarLink active={false} icon={Settings} label="Paramètres" />
         </nav>
 
