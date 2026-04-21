@@ -4,7 +4,7 @@ import { db, auth } from "../lib/firebase";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import Button from "../components/ui/Button";
-import { Loader2, User, Calendar, MapPin, Heart, FileText } from "lucide-react";
+import { Loader2, User, Calendar, MapPin, Heart, FileText, Target } from "lucide-react";
 
 const GABON_CITIES = [
   "Libreville", "Port-Gentil", "Franceville", "Oyem", "Moanda", 
@@ -22,8 +22,19 @@ export default function OnboardingPage() {
     gender: "",
     birthDate: "",
     city: "",
+    neighborhood: "",
     bio: "",
-    lookingFor: ""
+    lookingFor: "",
+    phone: "",
+    hobbies: "",
+    entertainment: "",
+    sport: "",
+    musicStyle: "",
+    childrenCount: "0",
+    educationLevel: "",
+    diploma: "",
+    occupation: "",
+    salary: ""
   });
 
   const handleSubmit = async () => {
@@ -41,6 +52,7 @@ export default function OnboardingPage() {
       await setDoc(doc(db, "profiles", user.uid), {
         ...formData,
         userId: user.uid,
+        email: user.email,
         mainPhoto: mainPhoto,
         photos: [mainPhoto],
         updatedAt: serverTimestamp(),
@@ -75,7 +87,7 @@ export default function OnboardingPage() {
       <div className="max-w-xl w-full bg-white rounded-[2.5rem] shadow-xl border border-stone-100 overflow-hidden">
         {/* Progress Bar */}
         <div className="h-1.5 w-full bg-stone-100 flex">
-          {[1, 2, 3].map((s) => (
+          {[1, 2, 3, 4, 5].map((s) => (
             <div 
               key={s} 
               className={`h-full flex-1 transition-all duration-500 ${s <= step ? 'bg-love-red' : 'bg-transparent'}`} 
@@ -152,17 +164,40 @@ export default function OnboardingPage() {
               </div>
 
               <div className="space-y-4">
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-stone-500 uppercase ml-1">Ville au Gabon</label>
+                    <select 
+                      value={formData.city}
+                      onChange={(e) => setFormData({...formData, city: e.target.value})}
+                      className="w-full h-12 px-4 bg-stone-50 border-stone-100 border rounded-2xl outline-none"
+                    >
+                      <option value="">Sélectionnez votre ville</option>
+                      {GABON_CITIES.map(c => <option key={c} value={c}>{c}</option>)}
+                      <option value="Diaspora">Diaspora (Hors Gabon)</option>
+                    </select>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-stone-500 uppercase ml-1">Quartier</label>
+                    <input 
+                      type="text" 
+                      value={formData.neighborhood}
+                      onChange={(e) => setFormData({...formData, neighborhood: e.target.value})}
+                      placeholder="Ex: Akanda, Glass..."
+                      className="w-full h-12 px-4 bg-stone-50 border-stone-100 border rounded-2xl outline-none"
+                    />
+                  </div>
+                </div>
+
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-stone-500 uppercase ml-1">Ville au Gabon</label>
-                  <select 
-                    value={formData.city}
-                    onChange={(e) => setFormData({...formData, city: e.target.value})}
+                  <label className="text-xs font-bold text-stone-500 uppercase ml-1">Numéro de téléphone</label>
+                  <input 
+                    type="tel" 
+                    value={formData.phone}
+                    onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                    placeholder="Ex: 074XXXXXX"
                     className="w-full h-12 px-4 bg-stone-50 border-stone-100 border rounded-2xl outline-none"
-                  >
-                    <option value="">Sélectionnez votre ville</option>
-                    {GABON_CITIES.map(c => <option key={c} value={c}>{c}</option>)}
-                    <option value="Diaspora">Diaspora (Hors Gabon)</option>
-                  </select>
+                  />
                 </div>
 
                 <div className="space-y-1">
@@ -194,6 +229,127 @@ export default function OnboardingPage() {
           )}
 
           {step === 3 && (
+            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
+              <div className="text-center mb-8">
+                <div className="w-16 h-16 bg-love-red/10 text-love-red rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <FileText className="w-8 h-8 text-love-red" />
+                </div>
+                <h2 className="text-2xl font-serif font-bold italic">Profil social</h2>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-stone-500 uppercase ml-1">Nombre d'enfants</label>
+                  <select 
+                    value={formData.childrenCount}
+                    onChange={(e) => setFormData({...formData, childrenCount: e.target.value})}
+                    className="w-full h-12 px-4 bg-stone-50 border-stone-100 border rounded-2xl outline-none"
+                  >
+                    {["0", "1", "2", "3", "4+"].map(n => <option key={n} value={n}>{n}</option>)}
+                  </select>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-stone-500 uppercase ml-1">Loisir préféré</label>
+                  <input 
+                    type="text" 
+                    value={formData.hobbies}
+                    onChange={(e) => setFormData({...formData, hobbies: e.target.value})}
+                    placeholder="Ex: Lecture, Voyage..."
+                    className="w-full h-12 px-4 bg-stone-50 border-stone-100 border rounded-2xl outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-stone-500 uppercase ml-1">Style de musique</label>
+                  <input 
+                    type="text" 
+                    value={formData.musicStyle}
+                    onChange={(e) => setFormData({...formData, musicStyle: e.target.value})}
+                    placeholder="Ex: Afrobeat, Rnb..."
+                    className="w-full h-12 px-4 bg-stone-50 border-stone-100 border rounded-2xl outline-none"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-stone-500 uppercase ml-1">Sport</label>
+                  <input 
+                    type="text" 
+                    value={formData.sport}
+                    onChange={(e) => setFormData({...formData, sport: e.target.value})}
+                    placeholder="Ex: Football, Fitness..."
+                    className="w-full h-12 px-4 bg-stone-50 border-stone-100 border rounded-2xl outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-4">
+                <Button variant="outline" onClick={prevStep} className="flex-1 h-12">Retour</Button>
+                <Button onClick={nextStep} className="flex-[2] h-12">Continuer</Button>
+              </div>
+            </motion.div>
+          )}
+
+          {step === 4 && (
+            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
+              <div className="text-center mb-8">
+                <div className="w-16 h-16 bg-love-red/10 text-love-red rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <Target className="w-8 h-8 text-love-red" />
+                </div>
+                <h2 className="text-2xl font-serif font-bold italic">Vie professionnelle</h2>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-stone-500 uppercase ml-1">Fonction / Métier</label>
+                  <input 
+                    type="text" 
+                    value={formData.occupation}
+                    onChange={(e) => setFormData({...formData, occupation: e.target.value})}
+                    className="w-full h-12 px-4 bg-stone-50 border-stone-100 border rounded-2xl outline-none"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-stone-500 uppercase ml-1">Salaire approx.</label>
+                  <input 
+                    type="text" 
+                    value={formData.salary}
+                    onChange={(e) => setFormData({...formData, salary: e.target.value})}
+                    placeholder="Ex: 500k CFA"
+                    className="w-full h-12 px-4 bg-stone-50 border-stone-100 border rounded-2xl outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-stone-500 uppercase ml-1">Niveau scolaire</label>
+                  <input 
+                    type="text" 
+                    value={formData.educationLevel}
+                    onChange={(e) => setFormData({...formData, educationLevel: e.target.value})}
+                    className="w-full h-12 px-4 bg-stone-50 border-stone-100 border rounded-2xl outline-none"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-stone-500 uppercase ml-1">Plus haut diplôme</label>
+                  <input 
+                    type="text" 
+                    value={formData.diploma}
+                    onChange={(e) => setFormData({...formData, diploma: e.target.value})}
+                    className="w-full h-12 px-4 bg-stone-50 border-stone-100 border rounded-2xl outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-4">
+                <Button variant="outline" onClick={prevStep} className="flex-1 h-12">Retour</Button>
+                <Button onClick={nextStep} className="flex-[2] h-12">Continuer</Button>
+              </div>
+            </motion.div>
+          )}
+
+          {step === 5 && (
             <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
               <div className="text-center mb-8">
                 <div className="w-16 h-16 bg-love-red/10 text-love-red rounded-2xl flex items-center justify-center mx-auto mb-4">

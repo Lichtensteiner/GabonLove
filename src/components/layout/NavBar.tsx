@@ -1,4 +1,4 @@
-import { Heart, MessageCircle, User, LogOut, Home } from "lucide-react";
+import { Heart, MessageCircle, User, LogOut, Home, Shield } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { auth } from "../../lib/firebase";
 import { signOut } from "firebase/auth";
@@ -6,6 +6,8 @@ import NotificationCenter from "./NotificationCenter";
 
 export default function NavBar() {
   const location = useLocation();
+  const user = auth.currentUser;
+  const isAdmin = user?.email === "ludovicjusdorange@gmail.com" || user?.email === "ludo.consulting3@gmail.com";
 
   const tabs = [
     { name: "Accueil", icon: Home, path: "/" },
@@ -13,6 +15,10 @@ export default function NavBar() {
     { name: "Messages", icon: MessageCircle, path: "/messages" },
     { name: "Profil", icon: User, path: "/profile" },
   ];
+
+  if (isAdmin) {
+    tabs.splice(2, 0, { name: "Admin", icon: Shield, path: "/admin" });
+  }
 
   return (
     <nav className="fixed bottom-0 sm:top-0 sm:bottom-auto w-full bg-white/80 backdrop-blur-md border-t sm:border-t-0 sm:border-b border-stone-200 z-50 h-16 shadow-lg sm:shadow-sm">

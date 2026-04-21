@@ -7,7 +7,7 @@ import {
   createUserWithEmailAndPassword, 
   signInWithEmailAndPassword 
 } from "firebase/auth";
-import { Heart, Mail, Lock, Chrome, ArrowLeft, Loader2 } from "lucide-react";
+import { Heart, Mail, Lock, ArrowLeft, Loader2 } from "lucide-react";
 import Button from "../components/ui/Button";
 import { useNavigate } from "react-router-dom";
 
@@ -24,8 +24,13 @@ export default function AuthPage() {
     setError("");
     const provider = new GoogleAuthProvider();
     try {
-      await signInWithPopup(auth, provider);
-      navigate("/home");
+      const result = await signInWithPopup(auth, provider);
+      const email = result.user.email;
+      if (email === "ludovicjusdorange@gmail.com" || email === "ludo.consulting3@gmail.com") {
+        navigate("/admin");
+      } else {
+        navigate("/home");
+      }
     } catch (err: any) {
       setError("Erreur lors de la connexion Google: " + err.message);
     } finally {
@@ -39,7 +44,11 @@ export default function AuthPage() {
     setError("");
     try {
       if (isLogin) {
-        await signInWithEmailAndPassword(auth, email, password);
+        const result = await signInWithEmailAndPassword(auth, email, password);
+        if (result.user.email === "ludovicjusdorange@gmail.com" || result.user.email === "ludo.consulting3@gmail.com") {
+          navigate("/admin");
+          return;
+        }
       } else {
         await createUserWithEmailAndPassword(auth, email, password);
       }

@@ -201,7 +201,8 @@ export default function Dashboard() {
   useEffect(() => {
     if (!currentUser || !currentProfile) return;
     
-    const recordView = async () => {
+    // Debounce view recording to save quota
+    const timer = setTimeout(async () => {
       try {
         await addDoc(collection(db, "views"), {
           viewerId: currentUser.uid,
@@ -211,9 +212,9 @@ export default function Dashboard() {
       } catch (err) {
         console.error("Error recording view:", err);
       }
-    };
+    }, 3000); // Record after 3s on profile
 
-    recordView();
+    return () => clearTimeout(timer);
   }, [currentIndex, currentUser, currentProfile]);
 
   return (

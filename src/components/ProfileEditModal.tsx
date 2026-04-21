@@ -23,8 +23,19 @@ export default function ProfileEditModal({ isOpen, onClose, initialData }: Profi
     gender: "",
     birthDate: "",
     city: "",
+    neighborhood: "",
     bio: "",
-    lookingFor: ""
+    lookingFor: "",
+    phone: "",
+    hobbies: "",
+    entertainment: "",
+    sport: "",
+    musicStyle: "",
+    childrenCount: "0",
+    educationLevel: "",
+    diploma: "",
+    occupation: "",
+    salary: ""
   });
 
   useEffect(() => {
@@ -34,8 +45,19 @@ export default function ProfileEditModal({ isOpen, onClose, initialData }: Profi
         gender: initialData.gender || "",
         birthDate: initialData.birthDate || "",
         city: initialData.city || "",
+        neighborhood: initialData.neighborhood || "",
         bio: initialData.bio || "",
-        lookingFor: initialData.lookingFor || ""
+        lookingFor: initialData.lookingFor || "",
+        phone: initialData.phone || "",
+        hobbies: initialData.hobbies || "",
+        entertainment: initialData.entertainment || "",
+        sport: initialData.sport || "",
+        musicStyle: initialData.musicStyle || "",
+        childrenCount: initialData.childrenCount || "0",
+        educationLevel: initialData.educationLevel || "",
+        diploma: initialData.diploma || "",
+        occupation: initialData.occupation || "",
+        salary: initialData.salary || ""
       });
     }
   }, [initialData, isOpen]);
@@ -157,9 +179,30 @@ export default function ProfileEditModal({ isOpen, onClose, initialData }: Profi
                   </div>
                 </div>
 
-                {/* Location & Intent */}
+                 {/* Location & Intent */}
                 <div className="space-y-4">
-                  <h3 className="text-xs font-black text-stone-400 uppercase tracking-widest px-1">Social</h3>
+                  <h3 className="text-xs font-black text-stone-400 uppercase tracking-widest px-1">Social & Localisation</h3>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                       <label className="text-xs font-bold text-stone-500 ml-1">Numéro de téléphone</label>
+                       <input 
+                         type="tel" 
+                         value={formData.phone}
+                         onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                         className="w-full h-12 px-4 bg-white border-stone-100 border rounded-2xl outline-none shadow-sm"
+                         placeholder="074..."
+                       />
+                    </div>
+                    <div className="space-y-2">
+                       <label className="text-xs font-bold text-stone-500 ml-1">Quartier</label>
+                       <input 
+                         type="text" 
+                         value={formData.neighborhood}
+                         onChange={(e) => setFormData({...formData, neighborhood: e.target.value})}
+                         className="w-full h-12 px-4 bg-white border-stone-100 border rounded-2xl outline-none shadow-sm"
+                       />
+                    </div>
+                  </div>
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <label className="text-xs font-bold text-stone-500 ml-1">Ville</label>
@@ -183,6 +226,106 @@ export default function ProfileEditModal({ isOpen, onClose, initialData }: Profi
                         <option value="casual">Moment éphémère</option>
                       </select>
                     </div>
+                  </div>
+                </div>
+
+                {/* Centers of Interest */}
+                <div className="space-y-4">
+                  <h3 className="text-xs font-black text-stone-400 uppercase tracking-widest px-1">Centres d'intérêt</h3>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                       <label className="text-xs font-bold text-stone-500 ml-1">Loisirs</label>
+                       <input 
+                         type="text" 
+                         value={formData.hobbies}
+                         onChange={(e) => setFormData({...formData, hobbies: e.target.value})}
+                         className="w-full h-12 px-4 bg-white border-stone-100 border rounded-2xl outline-none shadow-sm"
+                       />
+                    </div>
+                    <div className="space-y-2">
+                       <label className="text-xs font-bold text-stone-500 ml-1">Divertissement</label>
+                       <input 
+                         type="text" 
+                         value={formData.entertainment}
+                         onChange={(e) => setFormData({...formData, entertainment: e.target.value})}
+                         className="w-full h-12 px-4 bg-white border-stone-100 border rounded-2xl outline-none shadow-sm"
+                       />
+                    </div>
+                  </div>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                       <label className="text-xs font-bold text-stone-500 ml-1">Sport</label>
+                       <input 
+                         type="text" 
+                         value={formData.sport}
+                         onChange={(e) => setFormData({...formData, sport: e.target.value})}
+                         className="w-full h-12 px-4 bg-white border-stone-100 border rounded-2xl outline-none shadow-sm"
+                       />
+                    </div>
+                    <div className="space-y-2">
+                       <label className="text-xs font-bold text-stone-500 ml-1">Style de musique</label>
+                       <input 
+                         type="text" 
+                         value={formData.musicStyle}
+                         onChange={(e) => setFormData({...formData, musicStyle: e.target.value})}
+                         className="w-full h-12 px-4 bg-white border-stone-100 border rounded-2xl outline-none shadow-sm"
+                       />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Professional & Social Info */}
+                <div className="space-y-4">
+                  <h3 className="text-xs font-black text-stone-400 uppercase tracking-widest px-1">Vie Professionnelle & Sociale</h3>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                       <label className="text-xs font-bold text-stone-500 ml-1">Fonction / Métier</label>
+                       <input 
+                         type="text" 
+                         value={formData.occupation}
+                         onChange={(e) => setFormData({...formData, occupation: e.target.value})}
+                         className="w-full h-12 px-4 bg-white border-stone-100 border rounded-2xl outline-none shadow-sm"
+                       />
+                    </div>
+                    <div className="space-y-2">
+                       <label className="text-xs font-bold text-stone-500 ml-1">Salaire</label>
+                       <input 
+                         type="text" 
+                         value={formData.salary}
+                         onChange={(e) => setFormData({...formData, salary: e.target.value})}
+                         className="w-full h-12 px-4 bg-white border-stone-100 border rounded-2xl outline-none shadow-sm"
+                       />
+                    </div>
+                  </div>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                       <label className="text-xs font-bold text-stone-500 ml-1">Niveau scolaire</label>
+                       <input 
+                         type="text" 
+                         value={formData.educationLevel}
+                         onChange={(e) => setFormData({...formData, educationLevel: e.target.value})}
+                         className="w-full h-12 px-4 bg-white border-stone-100 border rounded-2xl outline-none shadow-sm"
+                       />
+                    </div>
+                    <div className="space-y-2">
+                       <label className="text-xs font-bold text-stone-500 ml-1">Diplôme</label>
+                       <input 
+                         type="text" 
+                         value={formData.diploma}
+                         onChange={(e) => setFormData({...formData, diploma: e.target.value})}
+                         className="w-full h-12 px-4 bg-white border-stone-100 border rounded-2xl outline-none shadow-sm"
+                       />
+                    </div>
+                  </div>
+                   <div className="space-y-2">
+                    <label className="text-xs font-bold text-stone-500 ml-1">Nombre d'enfants</label>
+                    <select 
+                      value={formData.childrenCount}
+                      onChange={(e) => setFormData({...formData, childrenCount: e.target.value})}
+                      className="w-full h-12 px-4 bg-white border-stone-100 border rounded-2xl outline-none shadow-sm"
+                    >
+                      {["0", "1", "2", "3", "4+"].map(n => <option key={n} value={n}>{n}</option>)}
+                    </select>
                   </div>
                 </div>
               </form>

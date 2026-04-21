@@ -17,8 +17,7 @@ export default function NotificationCenter() {
     const q = query(
       collection(db, "notifications"),
       where("recipientId", "==", user.uid),
-      orderBy("timestamp", "desc"),
-      limit(10)
+      limit(20)
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {

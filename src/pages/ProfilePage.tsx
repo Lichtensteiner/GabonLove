@@ -5,9 +5,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { 
   User, 
   MapPin, 
-  Calendar, 
   Heart, 
-  Camera, 
   LogOut, 
   ChevronRight, 
   Loader2,
@@ -17,8 +15,16 @@ import {
   ShieldCheck,
   CreditCard,
   Bell,
-  Sparkles
+  Sparkles,
+  Phone,
+  Briefcase,
+  GraduationCap,
+  Music,
+  Dumbbell,
+  Users,
+  Home
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import NavBar from "../components/layout/NavBar";
 import Button from "../components/ui/Button";
 import { signOut } from "firebase/auth";
@@ -27,6 +33,7 @@ import ProfileEditModal from "../components/ProfileEditModal";
 
 export default function ProfilePage() {
   const [profile, setProfile] = useState<any>(null);
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [stats, setStats] = useState({ likes: 0, matches: 0, views: 0 });
@@ -174,16 +181,104 @@ export default function ProfilePage() {
             >
               {activeTab === 'account' && (
                 <>
-                  <OptionItem 
-                    icon={User} 
-                    label="Modifier le profil" 
-                    value="Bio, Infos, Photos" 
-                    color="text-love-red" 
-                    onClick={() => setIsEditModalOpen(true)}
-                  />
-                  <OptionItem icon={Bell} label="Notifications" value="Configurées" color="text-gabon-blue" />
-                  <OptionItem icon={ShieldCheck} label="Sécurité" value="Protégé" color="text-green-500" />
-                  <OptionItem icon={CreditCard} label="GabonLove Premium" value="Découvrir" color="text-gabon-yellow" />
+                  <div className="space-y-4">
+                    <h3 className="text-[10px] font-black text-stone-400 uppercase tracking-widest px-1">Général</h3>
+                    <OptionItem 
+                      icon={User} 
+                      label="Modifier le profil" 
+                      value="Bio, Infos, Photos" 
+                      color="text-love-red" 
+                      onClick={() => setIsEditModalOpen(true)}
+                    />
+                    {(user?.email === "ludovicjusdorange@gmail.com" || user?.email === "ludo.consulting3@gmail.com") && (
+                      <OptionItem 
+                        icon={ShieldCheck} 
+                        label="Panneau Admin" 
+                        value="Gestion système" 
+                        color="text-rose-600" 
+                        onClick={() => navigate("/admin")}
+                      />
+                    )}
+                    <OptionItem icon={Bell} label="Notifications" value="Configurées" color="text-gabon-blue" />
+                  </div>
+
+                  <div className="space-y-4 pt-4">
+                    <h3 className="text-[10px] font-black text-stone-400 uppercase tracking-widest px-1">Détails Personnels</h3>
+                    <div className="grid grid-cols-1 gap-2">
+                       <div className="bg-white p-6 rounded-[2rem] border border-stone-100 space-y-6">
+                          <div className="grid grid-cols-2 gap-y-6">
+                            <div className="flex items-center gap-3">
+                              <Phone className="w-4 h-4 text-stone-300" />
+                              <div>
+                                <p className="text-[10px] font-bold text-stone-400 uppercase">Téléphone</p>
+                                <p className="text-sm font-semibold">{profile?.phone || "Non renseigné"}</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <Home className="w-4 h-4 text-stone-300" />
+                              <div>
+                                <p className="text-[10px] font-bold text-stone-400 uppercase">Quartier</p>
+                                <p className="text-sm font-semibold">{profile?.neighborhood || "Non renseigné"}</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <Users className="w-4 h-4 text-stone-300" />
+                              <div>
+                                <p className="text-[10px] font-bold text-stone-400 uppercase">Enfants</p>
+                                <p className="text-sm font-semibold">{profile?.childrenCount || "0"}</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <Briefcase className="w-4 h-4 text-stone-300" />
+                              <div>
+                                <p className="text-[10px] font-bold text-stone-400 uppercase">Fonction</p>
+                                <p className="text-sm font-semibold">{profile?.occupation || "Non renseigné"}</p>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="h-px bg-stone-50 w-full" />
+
+                          <div className="grid grid-cols-2 gap-y-6">
+                            <div className="flex items-center gap-3">
+                              <GraduationCap className="w-4 h-4 text-stone-300" />
+                              <div>
+                                <p className="text-[10px] font-bold text-stone-400 uppercase">Diplôme</p>
+                                <p className="text-sm font-semibold">{profile?.diploma || "Non renseigné"}</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <CreditCard className="w-4 h-4 text-stone-300" />
+                              <div>
+                                <p className="text-[10px] font-bold text-stone-400 uppercase">Salaire</p>
+                                <p className="text-sm font-semibold">{profile?.salary || "Non renseigné"}</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <Music className="w-4 h-4 text-stone-300" />
+                              <div>
+                                <p className="text-[10px] font-bold text-stone-400 uppercase">Musique</p>
+                                <p className="text-sm font-semibold">{profile?.musicStyle || "Non renseigné"}</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <Dumbbell className="w-4 h-4 text-stone-300" />
+                              <div>
+                                <p className="text-[10px] font-bold text-stone-400 uppercase">Sport</p>
+                                <p className="text-sm font-semibold">{profile?.sport || "Non renseigné"}</p>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="pt-2">
+                             <p className="text-[10px] font-bold text-stone-400 uppercase mb-2">Loisirs & Divertissement</p>
+                             <p className="text-sm text-stone-600 italic">
+                                {profile?.hobbies || profile?.entertainment ? `${profile.hobbies}${profile.hobbies && profile.entertainment ? ' • ' : ''}${profile.entertainment}` : "Non renseigné"}
+                             </p>
+                          </div>
+                       </div>
+                    </div>
+                  </div>
                 </>
               )}
 

@@ -82,7 +82,11 @@ export default function App() {
 
           <Route path="/home" element={
             <ProtectedRoute>
-              <Dashboard />
+              {(user?.email === "ludovicjusdorange@gmail.com" || user?.email === "ludo.consulting3@gmail.com") ? (
+                <Navigate to="/admin" replace />
+              ) : (
+                <Dashboard />
+              )}
             </ProtectedRoute>
           } />
 
